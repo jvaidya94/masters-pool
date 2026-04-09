@@ -5,7 +5,7 @@
     {
       "id": "friends",
       "name": "Friends Pool",
-      "password": "friends2026",
+      "password": "friends",
       "entries": [
         {
           "id": "tyler",
@@ -132,7 +132,7 @@
     {
       "id": "stern",
       "name": "Stern Pool",
-      "password": "stern2026",
+      "password": "stern",
       "entries": [
         {
           "id": "stack",

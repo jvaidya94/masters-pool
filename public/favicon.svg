@@ -1,0 +1,21 @@
+<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+  <rect width="220" height="160" fill="#06402B"/>
+  <path
+    d="M 28,36 L 24,42 L 20,52 L 17,68 L 14,86 L 13,104 L 16,118 L 22,128
+       L 32,133 L 44,136 L 58,137 L 72,135 L 86,137 L 100,140
+       L 112,143 L 122,146 L 132,149 L 140,148 L 144,152 L 147,148
+       L 149,151 L 152,147 L 154,150 L 157,156 L 162,148
+       L 166,141 L 170,133 L 174,122 L 178,110 L 181,98
+       L 183,86 L 184,74 L 183,62 L 181,52 L 178,44
+       L 174,38 L 168,33 L 158,30 L 144,28 L 128,26
+       L 110,25 L 90,26 L 72,28 L 56,30 L 42,32 L 28,36 Z"
+    fill="none"
+    stroke="#F5EFE0"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <line x1="163" y1="152" x2="163" y2="118" stroke="#C9A24A" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="163,118 176,122 163,127" fill="#C9A24A"/>
+  <circle cx="163" cy="153" r="3" fill="#C9A24A"/>
+</svg>
