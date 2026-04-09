@@ -5,12 +5,9 @@ let cache = null
 let cacheTime = 0
 const CACHE_TTL = 60_000
 
-// Try multiple ESPN endpoints — Masters is not a PGA Tour event
-const ESPN_URLS = [
-  'https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard',
-  'https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard',
-  'https://site.api.espn.com/apis/site/v2/sports/golf/masters/leaderboard',
-]
+// Direct tournament ID endpoint — 2026 Masters
+const MASTERS_ID = '401811941'
+const ESPN_URL = `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event=${MASTERS_ID}`
 
 const FETCH_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (compatible; MastersPool/1.0)',
@@ -25,22 +22,10 @@ export default async function handler(req, res) {
     return res.json({ ...cache, fromCache: true })
   }
 
-  let raw = null
-  let lastError = null
-
-  for (const url of ESPN_URLS) {
-    try {
-      const upstream = await fetch(url, { headers: FETCH_HEADERS })
-      if (!upstream.ok) { lastError = `ESPN ${url} returned ${upstream.status}`; continue }
-      raw = await upstream.json()
-      break
-    } catch (err) {
-      lastError = err.message
-    }
-  }
-
   try {
-    if (!raw) throw new Error(lastError ?? 'All ESPN endpoints failed')
+    const upstream = await fetch(ESPN_URL, { headers: FETCH_HEADERS })
+    if (!upstream.ok) throw new Error(`ESPN returned ${upstream.status}`)
+    const raw = await upstream.json()
 
     // ESPN wraps events under sports[0].leagues[0].events OR top-level events
     const events =
@@ -48,21 +33,12 @@ export default async function handler(req, res) {
       raw.sports?.[0]?.leagues?.[0]?.events ??
       []
 
-    const mastersEvent = events.find(
-      (e) =>
-        e.name?.toLowerCase().includes('masters') ||
-        e.shortName?.toLowerCase().includes('masters')
-    )
+    // With a specific event ID there should be exactly one event
+    const mastersEvent = events[0] ?? null
 
     if (!mastersEvent) {
-      // Return empty payload with debug info about what events we did find
-      const empty = {
-        event: null,
-        competitors: [],
-        cachedAt: Date.now(),
-        debug_events: events.map((e) => e.name ?? e.shortName ?? '?'),
-      }
-      cache = { event: null, competitors: [], cachedAt: Date.now() }
+      const empty = { event: null, competitors: [], cachedAt: Date.now() }
+      cache = empty
       cacheTime = Date.now()
       return res.json(empty)
     }
