@@ -76,7 +76,7 @@ export default function TeamCard({ entry, rank, defaultExpanded = false }) {
           <div
             className="grid px-4 py-1.5 text-[10px] font-semibold tracking-widest uppercase"
             style={{
-              gridTemplateColumns: '1.4rem 1fr 2.6rem 2.6rem 2.6rem 2.6rem 5.5rem 5.5rem',
+              gridTemplateColumns: 'var(--golfer-cols)',
               background: 'var(--cream-dark)',
               color: '#7A7A7A',
               gap: '0.5rem',
@@ -84,6 +84,8 @@ export default function TeamCard({ entry, rank, defaultExpanded = false }) {
           >
             <span className="text-center">Pos</span>
             <span>Golfer</span>
+            <span className="text-center">Tot</span>
+            <span className="text-center">Thru</span>
             <span className="text-center">R1</span>
             <span className="text-center">R2</span>
             <span className="text-center">R3</span>
@@ -123,7 +125,7 @@ function GolferRow({ g }) {
     <div
       className="grid items-center px-4 py-2 text-xs"
       style={{
-        gridTemplateColumns: '1.4rem 1fr 2.6rem 2.6rem 2.6rem 2.6rem 5.5rem 5.5rem',
+        gridTemplateColumns: 'var(--golfer-cols)',
         borderBottom: '1px solid var(--cream-dark)',
         opacity: dim ? 0.45 : 1,
         gap: '0.5rem',
@@ -142,21 +144,22 @@ function GolferRow({ g }) {
         )}
       </span>
 
+      {/* Total to par */}
+      <span className="text-center font-semibold">
+        <ScoreDisplay val={scoreDisplay} isCut={isCut} isWD={isWD} notFound={notFound} scoreNum={scoreNum} />
+      </span>
+
+      {/* Thru */}
+      <span className="text-center text-[11px]" style={{ color: '#7A7A7A' }}>
+        {thru || '—'}
+      </span>
+
       {/* R1–R4 */}
       {[0, 1, 2, 3].map((i) => (
         <span key={i} className="text-center" style={{ color: '#4A4A4A' }}>
           {rounds[i] != null ? rounds[i] : '—'}
         </span>
       ))}
-
-      {/* Total score */}
-      <span
-        className="text-right font-semibold"
-        style={{ color: isCut || isWD || notFound ? 'var(--cut)' : `var(--${scoreClass === 'under' ? 'green' : scoreClass === 'over' ? 'cut' : 'text-mid'})` }}
-      >
-        {/* hack: inline the colour directly */}
-        <ScoreDisplay val={scoreDisplay} isCut={isCut} isWD={isWD} notFound={notFound} scoreNum={scoreNum} />
-      </span>
 
       {/* Earnings */}
       <span className="text-right" style={{ color: '#4A4A4A' }}>

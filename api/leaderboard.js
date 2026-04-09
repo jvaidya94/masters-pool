@@ -110,7 +110,7 @@ function parseCompetitor(c) {
     position: c.status?.position?.displayName ?? (isCut ? 'CUT' : isWD ? 'WD' : ''),
     score:    scoreRaw,
     rounds,
-    thru:     c.status?.thru ?? (statusName.includes('COMPLETE') ? 'F' : ''),
+    thru:     c.status?.thru ?? c.status?.hole ?? (statusName.includes('COMPLETE') ? 'F' : ''),
     earnings,
     isCut,
     isWD,
