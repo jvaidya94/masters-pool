@@ -83,6 +83,9 @@ export default function PasswordGate({ pools, onLogin }) {
         </p>
       </form>
 
+      <p className="mt-12 text-[10px] tracking-widest uppercase" style={{ color: 'rgba(122,170,144,0.5)' }}>
+        Invitation only
+      </p>
     </div>
   )
 }
