@@ -93,17 +93,26 @@ function parseCompetitor(c) {
         : parseInt((earnStat.displayValue ?? '').replace(/[^0-9]/g, ''), 10) || 0
   }
 
-  // Score to par — normalise "E" → "0", strip "+" prefix.
-  // ESPN sometimes puts it at top-level c.score, otherwise in statistics or status.
+  // Score to par — total for the tournament.
   // Guard against ESPN returning the year (e.g. "2026") for pre-round players.
   const rawScore =
-    statsMap.score?.displayValue ??
     statsMap.topar?.displayValue ??
+    statsMap.score?.displayValue ??
     (typeof c.score === 'string' ? c.score : null) ??
     c.status?.displayValue ??
     'E'
   const parsedN = parseInt(rawScore, 10)
   const scoreRaw = (!isNaN(parsedN) && Math.abs(parsedN) > 99) ? 'E' : rawScore
+
+  // Today's round score to par (separate from total)
+  const rawToday =
+    statsMap.today?.displayValue ??
+    statsMap.currentRound?.displayValue ??
+    null
+  const parsedToday = rawToday ? parseInt(rawToday, 10) : NaN
+  const todayRaw = rawToday && !isNaN(parsedToday) && Math.abs(parsedToday) <= 99
+    ? rawToday
+    : null
 
   return {
     id:       c.athlete?.id ?? null,
@@ -111,6 +120,7 @@ function parseCompetitor(c) {
     country:  c.athlete?.flag?.alt ?? '',
     position: c.status?.position?.displayName ?? (isCut ? 'CUT' : isWD ? 'WD' : ''),
     score:    scoreRaw,
+    today:    todayRaw,
     rounds,
     thru:     c.status?.thru ?? c.status?.hole ?? (statusName.includes('COMPLETE') ? 'F' : ''),
     earnings,

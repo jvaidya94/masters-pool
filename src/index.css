@@ -13,8 +13,8 @@
     --gold-light: #E2C47A;
     --cut:        #8B0000;
 
-    /* Golfer row: Pos | Golfer | Tot | Thru | R1 | R2 | R3 | R4 | Earnings | √Score */
-    --golfer-cols: 1.4rem 1fr 2.8rem 2.8rem 2.4rem 2.4rem 2.4rem 2.4rem 5.5rem 4.5rem;
+    /* Golfer row: Pos | Golfer | Score | Today | Thru | R1 | R2 | R3 | R4 | Earnings | √Score */
+    --golfer-cols: 1.4rem 1fr 2.8rem 2.8rem 2.8rem 2.4rem 2.4rem 2.4rem 2.4rem 5.5rem 4.5rem;
   }
 
   body {

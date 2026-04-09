@@ -84,7 +84,8 @@ export default function TeamCard({ entry, rank, defaultExpanded = false }) {
           >
             <span className="text-center">Pos</span>
             <span>Golfer</span>
-            <span className="text-center">Tot</span>
+            <span className="text-center">Score</span>
+            <span className="text-center">Today</span>
             <span className="text-center">Thru</span>
             <span className="text-center">R1</span>
             <span className="text-center">R2</span>
@@ -117,6 +118,7 @@ function GolferRow({ g }) {
 
   const rounds  = comp?.rounds ?? []
   const thru    = comp?.thru ?? ''
+  const todayNum   = comp?.today != null ? parseScore(comp.today) : null
   const scoreDisplay = isCut || isWD || notFound
     ? (isCut ? 'CUT' : isWD ? 'WD' : 'N/F')
     : (comp ? formatScore(scoreNum) : '—')
@@ -144,9 +146,19 @@ function GolferRow({ g }) {
         )}
       </span>
 
-      {/* Total to par */}
+      {/* Total score to par */}
       <span className="text-center font-semibold">
         <ScoreDisplay val={scoreDisplay} isCut={isCut} isWD={isWD} notFound={notFound} scoreNum={scoreNum} />
+      </span>
+
+      {/* Today's round score */}
+      <span className="text-center font-semibold">
+        {todayNum != null
+          ? <span style={{ color: todayNum < 0 ? 'var(--green)' : todayNum > 0 ? 'var(--cut)' : '#4A4A4A' }}>
+              {formatScore(todayNum)}
+            </span>
+          : <span style={{ color: '#7A7A7A' }}>—</span>
+        }
       </span>
 
       {/* Thru */}
