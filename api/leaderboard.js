@@ -93,12 +93,15 @@ function parseCompetitor(c) {
         : parseInt((earnStat.displayValue ?? '').replace(/[^0-9]/g, ''), 10) || 0
   }
 
-  // Score to par — normalise "E" → "0", strip "+" prefix
-  const scoreRaw =
+  // Score to par — normalise "E" → "0", strip "+" prefix.
+  // Guard against ESPN returning the year (e.g. "2026") for pre-round players.
+  const rawScore =
     statsMap.score?.displayValue ??
     statsMap.topar?.displayValue ??
     c.status?.displayValue ??
     'E'
+  const parsedN = parseInt(rawScore, 10)
+  const scoreRaw = (!isNaN(parsedN) && Math.abs(parsedN) > 99) ? 'E' : rawScore
 
   return {
     id:       c.athlete?.id ?? null,

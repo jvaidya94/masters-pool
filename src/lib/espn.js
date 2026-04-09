@@ -27,10 +27,13 @@ export function findCompetitor(competitors, golferName) {
 }
 
 // Parse ESPN score string to number  ("E" → 0, "-11" → -11, "+2" → 2)
+// Clamps to ±99 — ESPN sometimes returns the year (e.g. "2026") as a
+// placeholder for players who haven't teed off yet.
 export function parseScore(scoreStr) {
   if (!scoreStr || scoreStr === 'E' || scoreStr === 'EVEN') return 0
   const n = parseInt(scoreStr, 10)
-  return isNaN(n) ? 0 : n
+  if (isNaN(n) || Math.abs(n) > 99) return 0
+  return n
 }
 
 // Format a numeric score for display
