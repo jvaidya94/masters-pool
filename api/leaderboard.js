@@ -46,6 +46,19 @@ export default async function handler(req, res) {
     const competition = mastersEvent.competitions?.[0] ?? {}
     const competitors = (competition.competitors ?? []).map(parseCompetitor)
 
+    // Debug: expose raw ESPN fields for first active competitor so we can identify stat names
+    const debugComp = (competition.competitors ?? []).find(
+      (c) => !c.status?.type?.name?.includes('CUT') && !c.status?.type?.name?.includes('WD')
+    )
+    const debug = debugComp ? {
+      name:          debugComp.athlete?.displayName,
+      score_field:   debugComp.score,
+      status_dv:     debugComp.status?.displayValue,
+      status_thru:   debugComp.status?.thru,
+      stat_names:    (debugComp.statistics ?? []).map((s) => `${s.name}=${s.displayValue}`),
+      linescore_vals: (debugComp.linescores ?? []).map((l) => `p${l.period?.number}:${l.value}:${l.displayValue}`),
+    } : null
+
     const payload = {
       event: {
         name:      mastersEvent.name,
@@ -56,6 +69,7 @@ export default async function handler(req, res) {
       },
       competitors,
       cachedAt: Date.now(),
+      debug,
     }
 
     cache = payload
@@ -93,26 +107,25 @@ function parseCompetitor(c) {
         : parseInt((earnStat.displayValue ?? '').replace(/[^0-9]/g, ''), 10) || 0
   }
 
-  // Score to par — total for the tournament.
-  // Guard against ESPN returning the year (e.g. "2026") for pre-round players.
+  // Total tournament score to par.
+  // statsMap.topar / statsMap.score hold the running total; guard against year placeholder.
   const rawScore =
     statsMap.topar?.displayValue ??
     statsMap.score?.displayValue ??
     (typeof c.score === 'string' ? c.score : null) ??
-    c.status?.displayValue ??
     'E'
   const parsedN = parseInt(rawScore, 10)
   const scoreRaw = (!isNaN(parsedN) && Math.abs(parsedN) > 99) ? 'E' : rawScore
 
-  // Today's round score to par (separate from total)
+  // Today's round score to par.
+  // c.status.displayValue is the current-round score in ESPN's golf API.
+  // statsMap.today is a fallback if ESPN ever breaks it out separately.
   const rawToday =
     statsMap.today?.displayValue ??
-    statsMap.currentRound?.displayValue ??
+    c.status?.displayValue ??
     null
-  const parsedToday = rawToday ? parseInt(rawToday, 10) : NaN
-  const todayRaw = rawToday && !isNaN(parsedToday) && Math.abs(parsedToday) <= 99
-    ? rawToday
-    : null
+  const parsedToday = rawToday != null ? parseInt(rawToday, 10) : NaN
+  const todayRaw = !isNaN(parsedToday) && Math.abs(parsedToday) <= 99 ? rawToday : null
 
   return {
     id:       c.athlete?.id ?? null,
