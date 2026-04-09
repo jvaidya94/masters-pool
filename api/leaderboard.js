@@ -87,45 +87,36 @@ function parseCompetitor(c) {
     (c.statistics ?? []).map((s) => [s.name, s])
   )
 
-  // Round scores — sort by period number
-  const rounds = (c.linescores ?? [])
-    .filter((r) => r.period?.number)
-    .sort((a, b) => a.period.number - b.period.number)
-    .map((r) => (r.value != null ? Number(r.value) : null))
-
   const statusName = c.status?.type?.name ?? ''
   const isCut = statusName.includes('CUT')
   const isWD  = statusName.includes('WD') || statusName.includes('WITHDRAWN')
+  const thru  = c.status?.thru ?? 0
 
-  // Earnings: ESPN may store as number (value) or formatted string (displayValue)
+  // Round scores — ESPN linescores have no reliable period.number in this feed.
+  // Real rounds have a numeric stroke value; placeholders use displayValue "-".
+  const rounds = (c.linescores ?? [])
+    .filter((r) => r.displayValue && r.displayValue !== '-' && r.displayValue !== '--')
+    .map((r) => (r.value != null ? Number(r.value) : null))
+
+  // Earnings — stat is named "officialAmount" in ESPN's Masters feed.
   let earnings = 0
-  const earnStat = statsMap.earnings ?? statsMap.moneyWon
+  const earnStat = statsMap.officialAmount ?? statsMap.earnings ?? statsMap.moneyWon
   if (earnStat) {
     earnings =
-      typeof earnStat.value === 'number'
+      typeof earnStat.value === 'number' && earnStat.value > 0
         ? earnStat.value
         : parseInt((earnStat.displayValue ?? '').replace(/[^0-9]/g, ''), 10) || 0
   }
 
-  // Total tournament score to par.
-  // statsMap.topar / statsMap.score hold the running total; guard against year placeholder.
-  const rawScore =
-    statsMap.topar?.displayValue ??
-    statsMap.score?.displayValue ??
-    (typeof c.score === 'string' ? c.score : null) ??
-    'E'
-  const parsedN = parseInt(rawScore, 10)
-  const scoreRaw = (!isNaN(parsedN) && Math.abs(parsedN) > 99) ? 'E' : rawScore
+  // Score to par — stat is named "scoreToPar" in ESPN's Masters feed.
+  // "-" / "--" means the player hasn't started yet; treat as E.
+  const rawScore = statsMap.scoreToPar?.displayValue ?? c.score?.displayValue ?? '-'
+  const scoreClean = (rawScore === '-' || rawScore === '--') ? 'E' : rawScore
+  const parsedN   = parseInt(scoreClean, 10)
+  const scoreRaw  = !isNaN(parsedN) && Math.abs(parsedN) > 99 ? 'E' : scoreClean
 
-  // Today's round score to par.
-  // c.status.displayValue is the current-round score in ESPN's golf API.
-  // statsMap.today is a fallback if ESPN ever breaks it out separately.
-  const rawToday =
-    statsMap.today?.displayValue ??
-    c.status?.displayValue ??
-    null
-  const parsedToday = rawToday != null ? parseInt(rawToday, 10) : NaN
-  const todayRaw = !isNaN(parsedToday) && Math.abs(parsedToday) <= 99 ? rawToday : null
+  // Today's round — in R1 equals the total; only set once the player has started.
+  const todayRaw = thru > 0 ? scoreRaw : null
 
   return {
     id:       c.athlete?.id ?? null,
@@ -135,7 +126,7 @@ function parseCompetitor(c) {
     score:    scoreRaw,
     today:    todayRaw,
     rounds,
-    thru:     c.status?.thru ?? c.status?.hole ?? (statusName.includes('COMPLETE') ? 'F' : ''),
+    thru,
     earnings,
     isCut,
     isWD,
