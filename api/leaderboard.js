@@ -94,10 +94,12 @@ function parseCompetitor(c) {
   }
 
   // Score to par — normalise "E" → "0", strip "+" prefix.
+  // ESPN sometimes puts it at top-level c.score, otherwise in statistics or status.
   // Guard against ESPN returning the year (e.g. "2026") for pre-round players.
   const rawScore =
     statsMap.score?.displayValue ??
     statsMap.topar?.displayValue ??
+    (typeof c.score === 'string' ? c.score : null) ??
     c.status?.displayValue ??
     'E'
   const parsedN = parseInt(rawScore, 10)

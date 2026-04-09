@@ -1,7 +1,13 @@
-// Name normalisation: lowercase + strip accents + collapse whitespace
-// Handles Højgaard→Hojgaard, Åberg→Aberg, etc.
+// Name normalisation: lowercase + strip accents + collapse whitespace.
+// NFD handles Å→A, É→E etc. but some chars (ø, ð, þ, ß) have no NFD decomposition
+// and must be transliterated manually first.
 export function normalizeName(name) {
   return (name ?? '')
+    // Transliterate chars that NFD won't decompose
+    .replace(/ø/g, 'o').replace(/Ø/g, 'O')
+    .replace(/ð/g, 'd').replace(/Ð/g, 'D')
+    .replace(/þ/g, 'th').replace(/Þ/g, 'Th')
+    .replace(/ß/g, 'ss')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
