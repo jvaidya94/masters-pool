@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Masters Pool</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --green: #06402B; --green-mid: #0A5C3E; --green-light: #0F7A52;
+    --cream: #F5EFE0; --cream-dark: #EDE4CF;
+    --gold: #C9A24A; --gold-light: #E2C47A;
+    --text-dark: #1A1A1A; --text-mid: #4A4A4A; --text-light: #7A7A7A;
+    --cut: #8B0000; --under: #06402B; --over: #8B0000; --even: #4A4A4A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text-dark); min-height: 100vh; }
+
+  /* ── GATE ── */
+  #gate { position:fixed;inset:0;background:var(--green);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100; }
+  #gate.hidden { display:none; }
+  .gate-logo { margin-bottom:2rem; }
+  .gate-card { background:rgba(255,255,255,.06);border:1px solid rgba(201,162,74,.35);border-radius:4px;padding:2.5rem 3rem;width:360px;display:flex;flex-direction:column;align-items:center;gap:1.5rem; }
+  .gate-card h2 { font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--gold);letter-spacing:.04em;text-align:center; }
+  .gate-card p { font-size:.78rem;color:#7aaa90;letter-spacing:.08em;text-align:center;text-transform:uppercase; }
+  .gate-input { width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(201,162,74,.4);border-radius:3px;color:var(--cream);font-family:'Inter',sans-serif;font-size:.95rem;letter-spacing:.08em;padding:.75rem 1rem;outline:none;text-align:center;transition:border-color .15s; }
+  .gate-input::placeholder { color:rgba(245,239,224,.3); }
+  .gate-input:focus { border-color:var(--gold); }
+  .gate-input.error { border-color:#e57373;animation:shake .3s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .gate-btn { width:100%;background:var(--gold);color:var(--green);font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;letter-spacing:.08em;padding:.75rem 1rem;border:none;border-radius:3px;cursor:pointer;transition:background .15s; }
+  .gate-btn:hover { background:var(--gold-light); }
+  .gate-error { font-size:.75rem;color:#e57373;letter-spacing:.04em;min-height:1rem;text-align:center; }
+  .gate-footer { margin-top:3rem;font-size:.68rem;color:rgba(122,170,144,.5);letter-spacing:.1em;text-transform:uppercase; }
+
+  /* ── APP ── */
+  #app { display:none; }
+  #app.visible { display:block; }
+
+  header { background:var(--green);padding:0 2rem;border-bottom:3px solid var(--gold); }
+  .header-inner { max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:1rem 0; }
+  .logo-block { display:flex;align-items:center;gap:1rem; }
+  .logo-block .pool-title { border-left:1px solid rgba(201,162,74,.35);padding-left:1rem; }
+  .logo-block .pool-title h1 { font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:600;color:var(--gold);letter-spacing:.02em; }
+  .logo-block .pool-title p { font-size:.68rem;color:#7aaa90;letter-spacing:.12em;text-transform:uppercase;margin-top:2px; }
+  .header-meta { text-align:right; }
+  .final-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(201,162,74,.15);border:1px solid var(--gold);color:var(--gold-light);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:2px; }
+  .header-meta p { font-size:.72rem;color:#7aaa90;margin-top:6px;letter-spacing:.04em; }
+
+  .pool-nav { background:var(--green);border-bottom:1px solid rgba(255,255,255,.08);padding:0 2rem; }
+  .pool-nav-inner { max-width:1200px;margin:0 auto;display:flex; }
+  .pool-tab { font-family:'Playfair Display',serif;font-size:.88rem;font-weight:500;color:var(--gold);padding:.85rem 1.4rem;border-bottom:3px solid var(--gold);letter-spacing:.02em;cursor:default; }
+
+  main { max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start; }
+
+  .section-label { font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:600;color:var(--green);margin-bottom:1rem;display:flex;align-items:baseline;gap:.6rem; }
+  .section-label span { font-family:'Inter',sans-serif;font-size:.72rem;font-weight:500;color:var(--text-light);letter-spacing:.08em;text-transform:uppercase; }
+
+  .entry-list { display:flex;flex-direction:column;gap:.75rem; }
+  .entry-card { background:white;border:1px solid var(--cream-dark);border-radius:4px;overflow:hidden;transition:box-shadow .15s; }
+  .entry-card:hover { box-shadow:0 4px 20px rgba(6,64,43,.08); }
+  .entry-card.expanded { box-shadow:0 4px 20px rgba(6,64,43,.10); }
+  .entry-card.rank1 { border-left:3px solid var(--gold); }
+  .entry-card.rank2 { border-left:3px solid #A8A9AD; }
+  .entry-card.rank3 { border-left:3px solid #C47A30; }
+
+  .entry-header { display:grid;grid-template-columns:2rem 1fr auto auto auto auto;align-items:center;gap:1rem;padding:.9rem 1.1rem;cursor:pointer;user-select:none; }
+  .entry-rank { font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--gold);text-align:center; }
+  .entry-rank.top3 { color:var(--green); }
+  .entry-name { font-size:.95rem;font-weight:600;color:var(--text-dark); }
+  .entry-owner { font-size:.72rem;color:var(--text-light);margin-top:2px; }
+  .entry-col { text-align:right; }
+  .entry-col .val { font-size:.88rem;font-weight:600;color:var(--text-dark); }
+  .entry-col .lbl { font-size:.65rem;color:var(--text-light);letter-spacing:.08em;text-transform:uppercase;margin-top:2px; }
+  .sqrt-score { color:var(--green); }
+  .chevron { width:16px;height:16px;color:var(--text-light);transition:transform .2s;flex-shrink:0; }
+  .entry-card.expanded .chevron { transform:rotate(180deg); }
+
+  .golfer-table { border-top:1px solid var(--cream-dark);background:#faf8f3; }
+  .golfer-header-row { display:grid;grid-template-columns:1.6rem 1fr 2.8rem 2.8rem 2.8rem 2.8rem 5.5rem 5.5rem;gap:.5rem;padding:.45rem 1.1rem;background:var(--cream-dark);font-size:.65rem;font-weight:600;color:var(--text-light);letter-spacing:.08em;text-transform:uppercase; }
+  .golfer-header-row > * { text-align:center; }
+  .golfer-header-row > *:nth-child(2) { text-align:left; }
+  .golfer-header-row > *:last-child, .golfer-header-row > *:nth-last-child(2) { text-align:right; }
+  .golfer-row { display:grid;grid-template-columns:1.6rem 1fr 2.8rem 2.8rem 2.8rem 2.8rem 5.5rem 5.5rem;align-items:center;gap:.5rem;padding:.55rem 1.1rem;border-bottom:1px solid var(--cream-dark);font-size:.8rem; }
+  .golfer-row:last-child { border-bottom:none; }
+  .golfer-row.cut-row, .golfer-row.wd-row { opacity:.45; }
+  .g-pos { font-weight:600;color:var(--text-mid);font-size:.72rem; }
+  .g-name { font-weight:500;color:var(--text-dark); }
+  .g-name .ctry { font-size:.66rem;color:var(--text-light); }
+  .g-r { text-align:center;font-size:.76rem;color:var(--text-mid); }
+  .g-total { text-align:center;font-weight:600;font-size:.8rem; }
+  .under { color:var(--under); }
+  .over  { color:var(--over); }
+  .even  { color:var(--even); }
+  .g-earn { text-align:right;font-size:.76rem;color:var(--text-mid); }
+  .g-sqrt { text-align:right;font-weight:600;font-size:.8rem;color:var(--green-light); }
+  .error-note { font-size:.65rem;color:var(--cut);margin-top:1px; }
+
+  /* sidebar */
+  .sidebar { display:flex;flex-direction:column;gap:1.5rem; }
+  .widget { background:white;border:1px solid var(--cream-dark);border-radius:4px;overflow:hidden; }
+  .widget-header { background:var(--green);padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between; }
+  .widget-header h3 { font-family:'Playfair Display',serif;font-size:.9rem;font-weight:600;color:var(--gold);letter-spacing:.02em; }
+  .widget-header span { font-size:.68rem;color:#7aaa90;letter-spacing:.08em;text-transform:uppercase; }
+  .widget-body { padding:.75rem 1rem; }
+  .field-row { display:grid;grid-template-columns:1.6rem 1fr 2.5rem 2.5rem;align-items:center;gap:.5rem;padding:.42rem 0;border-bottom:1px solid var(--cream-dark);font-size:.78rem; }
+  .field-row:last-child { border-bottom:none; }
+  .f-pos { font-weight:700;color:var(--text-mid);font-size:.72rem; }
+  .f-name { font-weight:500;color:var(--text-dark); }
+  .f-thru { text-align:center;font-size:.72rem;color:var(--text-light); }
+  .f-score { text-align:right;font-weight:600; }
+  .summary-grid { display:grid;grid-template-columns:1fr 1fr;gap:.5rem; }
+  .summary-stat { background:var(--cream);border-radius:3px;padding:.6rem .75rem; }
+  .summary-stat .s-val { font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--green); }
+  .summary-stat .s-lbl { font-size:.65rem;color:var(--text-light);letter-spacing:.08em;text-transform:uppercase;margin-top:2px; }
+  .payout-row { display:flex;justify-content:space-between;align-items:center;padding:.32rem 0;border-bottom:1px solid var(--cream-dark);font-size:.78rem; }
+  .payout-row:last-child { border-bottom:none; }
+  .payout-pos { color:var(--text-mid);font-weight:500; }
+  .payout-amt { font-weight:600;color:var(--green); }
+
+  footer { text-align:center;padding:2rem;font-size:.72rem;color:var(--text-light);letter-spacing:.06em;border-top:1px solid var(--cream-dark);margin-top:1rem; }
+  footer span { color:var(--gold); }
+
+  @media (max-width:900px) { main { grid-template-columns:1fr; } .sidebar { order:-1; } }
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<div id="gate">
+  <div class="gate-logo">
+    <svg viewBox="0 0 220 160" width="180" height="130" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 28,36 L 24,42 L 20,52 L 17,68 L 14,86 L 13,104 L 16,118 L 22,128 L 32,133 L 44,136 L 58,137 L 72,135 L 86,137 L 100,140 L 112,143 L 122,146 L 132,149 L 140,148 L 144,152 L 147,148 L 149,151 L 152,147 L 154,150 L 157,156 L 162,148 L 166,141 L 170,133 L 174,122 L 178,110 L 181,98 L 183,86 L 184,74 L 183,62 L 181,52 L 178,44 L 174,38 L 168,33 L 158,30 L 144,28 L 128,26 L 110,25 L 90,26 L 72,28 L 56,30 L 42,32 L 28,36 Z"
+        fill="none" stroke="#F5EFE0" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+      <line x1="163" y1="152" x2="163" y2="118" stroke="#C9A24A" stroke-width="1.8" stroke-linecap="round"/>
+      <polygon points="163,118 176,122 163,127" fill="#C9A24A"/>
+      <circle cx="163" cy="153" r="2.5" fill="#C9A24A"/>
+    </svg>
+  </div>
+  <div class="gate-card">
+    <div><h2>The Masters Pool</h2><p style="margin-top:.4rem">Augusta National · April 2025</p></div>
+    <div style="width:100%">
+      <input id="gate-pw" class="gate-input" type="password" placeholder="Enter password"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+    </div>
+    <button class="gate-btn" onclick="checkPassword()">Enter</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+  <p class="gate-footer">Invitation only · Contact your pool commissioner</p>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-inner">
+      <div class="logo-block">
+        <svg viewBox="0 0 220 160" width="52" height="38" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 28,36 L 24,42 L 20,52 L 17,68 L 14,86 L 13,104 L 16,118 L 22,128 L 32,133 L 44,136 L 58,137 L 72,135 L 86,137 L 100,140 L 112,143 L 122,146 L 132,149 L 140,148 L 144,152 L 147,148 L 149,151 L 152,147 L 154,150 L 157,156 L 162,148 L 166,141 L 170,133 L 174,122 L 178,110 L 181,98 L 183,86 L 184,74 L 183,62 L 181,52 L 178,44 L 174,38 L 168,33 L 158,30 L 144,28 L 128,26 L 110,25 L 90,26 L 72,28 L 56,30 L 42,32 L 28,36 Z"
+            fill="none" stroke="#F5EFE0" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <line x1="163" y1="152" x2="163" y2="118" stroke="#C9A24A" stroke-width="2" stroke-linecap="round"/>
+          <polygon points="163,118 176,122 163,127" fill="#C9A24A"/>
+          <circle cx="163" cy="153" r="3" fill="#C9A24A"/>
+        </svg>
+        <div class="pool-title">
+          <h1 id="pool-title-text">Friends Pool</h1>
+          <p>Augusta National · April 2025</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="final-badge">&#x2713; Final Results</div>
+        <p>2025 Masters · Rory McIlroy, Champion</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="pool-nav">
+    <div class="pool-nav-inner">
+      <div class="pool-tab"><span id="active-pool-name">Friends Pool</span></div>
+    </div>
+  </nav>
+
+  <main>
+    <div>
+      <div class="section-label">
+        Final Standings <span id="standings-subtitle">Friends Pool · 10 entries</span>
+      </div>
+
+      <!-- ════════ FRIENDS POOL ════════ -->
+      <div class="entry-list" id="friends-entries">
+
+        <!-- 1. Tyler -->
+        <div class="entry-card rank1 expanded">
+          <div class="entry-header">
+            <div class="entry-rank top3">1</div>
+            <div><div class="entry-name">Tyler</div></div>
+            <div class="entry-col"><div class="val under">−19</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$5,124,000</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">3,395.9</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">1</div><div class="g-name">R. McIlroy<div class="ctry">NIR</div></div><div class="g-r">72</div><div class="g-r">66</div><div class="g-r">66</div><div class="g-r">73</div><div class="g-total under">−11</div><div class="g-earn">$4,200,000</div><div class="g-sqrt">2,049.4</div></div>
+            <div class="golfer-row"><div class="g-pos">T14</div><div class="g-name">J. Spieth<div class="ctry">USA</div></div><div class="g-r">73</div><div class="g-r">73</div><div class="g-r">69</div><div class="g-r">70</div><div class="g-total under">−3</div><div class="g-earn">$336,000</div><div class="g-sqrt">579.7</div></div>
+            <div class="golfer-row"><div class="g-pos">T8</div><div class="g-name">J. Day<div class="ctry">AUS</div></div><div class="g-r">70</div><div class="g-r">70</div><div class="g-r">71</div><div class="g-r">72</div><div class="g-total under">−5</div><div class="g-earn">$588,000</div><div class="g-sqrt">766.8</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">K. Bradley<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">73</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">D. Johnson<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">73</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">S. Garcia<div class="ctry">ESP</div></div><div class="g-r">72</div><div class="g-r">76</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+          </div>
+        </div>
+
+        <!-- 2. Andrew -->
+        <div class="entry-card rank2">
+          <div class="entry-header">
+            <div class="entry-rank top3">2</div>
+            <div><div class="entry-name">Andrew</div></div>
+            <div class="entry-col"><div class="val under">−11</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$2,824,780</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">3,290.3</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">T5</div><div class="g-name">B. DeChambeau<div class="ctry">USA</div></div><div class="g-r">69</div><div class="g-r">68</div><div class="g-r">69</div><div class="g-r">75</div><div class="g-total under">−7</div><div class="g-earn">$798,000</div><div class="g-sqrt">893.3</div></div>
+            <div class="golfer-row"><div class="g-pos">3</div><div class="g-name">P. Reed<div class="ctry">USA</div></div><div class="g-r">71</div><div class="g-r">70</div><div class="g-r">69</div><div class="g-r">69</div><div class="g-total under">−9</div><div class="g-earn">$1,428,000</div><div class="g-sqrt">1,195.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T42</div><div class="g-name">S. Lowry<div class="ctry">IRL</div></div><div class="g-r">71</div><div class="g-r">68</div><div class="g-r">72</div><div class="g-r">81</div><div class="g-total over">+4</div><div class="g-earn">$75,600</div><div class="g-sqrt">275.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T46</div><div class="g-name">S. Burns<div class="ctry">USA</div></div><div class="g-r">73</div><div class="g-r">70</div><div class="g-r">75</div><div class="g-r">75</div><div class="g-total over">+5</div><div class="g-earn">$61,180</div><div class="g-sqrt">247.4</div></div>
+            <div class="golfer-row"><div class="g-pos">T12</div><div class="g-name">H. English<div class="ctry">USA</div></div><div class="g-r">70</div><div class="g-r">73</div><div class="g-r">73</div><div class="g-r">68</div><div class="g-total under">−4</div><div class="g-earn">$462,000</div><div class="g-sqrt">679.7</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">R. Gerard<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+          </div>
+        </div>
+
+        <!-- 3. Sid -->
+        <div class="entry-card rank3">
+          <div class="entry-header">
+            <div class="entry-rank top3">3</div>
+            <div><div class="entry-name">Sid</div></div>
+            <div class="entry-col"><div class="val under">−12</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$2,176,650</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">3,043.6</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">7</div><div class="g-name">L. Åberg<div class="ctry">SWE</div></div><div class="g-r">68</div><div class="g-r">73</div><div class="g-r">69</div><div class="g-r">72</div><div class="g-total under">−6</div><div class="g-earn">$703,500</div><div class="g-sqrt">838.8</div></div>
+            <div class="golfer-row"><div class="g-pos">49</div><div class="g-name">Min Woo Lee<div class="ctry">AUS</div></div><div class="g-r">71</div><div class="g-r">72</div><div class="g-r">77</div><div class="g-r">74</div><div class="g-total over">+6</div><div class="g-earn">$54,600</div><div class="g-sqrt">233.7</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">Si Woo Kim<div class="ctry">KOR</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T12</div><div class="g-name">M. Homa<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">70</div><div class="g-r">69</div><div class="g-r">71</div><div class="g-total under">−4</div><div class="g-earn">$462,000</div><div class="g-sqrt">679.7</div></div>
+            <div class="golfer-row"><div class="g-pos">T5</div><div class="g-name">S. Im<div class="ctry">KOR</div></div><div class="g-r">71</div><div class="g-r">70</div><div class="g-r">71</div><div class="g-r">69</div><div class="g-total under">−7</div><div class="g-earn">$798,000</div><div class="g-sqrt">893.3</div></div>
+            <div class="golfer-row"><div class="g-pos">T27</div><div class="g-name">A. Rai<div class="ctry">ENG</div></div><div class="g-r">70</div><div class="g-r">74</div><div class="g-r">73</div><div class="g-r">70</div><div class="g-total under">−1</div><div class="g-earn">$158,550</div><div class="g-sqrt">398.2</div></div>
+          </div>
+        </div>
+
+        <!-- 4. Alex -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">4</div>
+            <div><div class="entry-name">Alex</div><div class="entry-owner" style="color:var(--cut)">⚠ Formula error on Z. Johnson — corrected from ESPN</div></div>
+            <div class="entry-col"><div class="val under">−11</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$1,909,180</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">2,940.3</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">T14</div><div class="g-name">C. Morikawa<div class="ctry">USA</div></div><div class="g-r">72</div><div class="g-r">69</div><div class="g-r">72</div><div class="g-r">72</div><div class="g-total under">−3</div><div class="g-earn">$336,000</div><div class="g-sqrt">579.7</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">B. Koepka<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">75</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T14</div><div class="g-name">T. Hatton<div class="ctry">ENG</div></div><div class="g-r">69</div><div class="g-r">70</div><div class="g-r">75</div><div class="g-r">71</div><div class="g-total under">−3</div><div class="g-earn">$336,000</div><div class="g-sqrt">579.7</div></div>
+            <div class="golfer-row"><div class="g-pos">T46</div><div class="g-name">W. Clark<div class="ctry">USA</div></div><div class="g-r">76</div><div class="g-r">68</div><div class="g-r">75</div><div class="g-r">74</div><div class="g-total over">+5</div><div class="g-earn">$61,180</div><div class="g-sqrt">247.4</div></div>
+            <div class="golfer-row"><div class="g-pos">T8</div><div class="g-name">K. Kitayama<div class="ctry">USA</div></div><div class="g-r">72</div><div class="g-r">72</div><div class="g-r">66</div><div class="g-r">73</div><div class="g-total under">−5</div><div class="g-earn">$588,000</div><div class="g-sqrt">766.8</div></div>
+            <div class="golfer-row"><div class="g-pos">T8</div><div class="g-name">Z. Johnson<div class="ctry">USA</div><div class="error-note">⚠ #REF in sheet — ESPN corrected</div></div><div class="g-r">72</div><div class="g-r">74</div><div class="g-r">66</div><div class="g-r">71</div><div class="g-total under">−5</div><div class="g-earn">$588,000</div><div class="g-sqrt">766.8</div></div>
+          </div>
+        </div>
+
+        <!-- 5. Blake -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">5</div>
+            <div><div class="entry-name">Blake</div></div>
+            <div class="entry-col"><div class="val under">−11</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$1,881,600</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">2,504.0</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">4</div><div class="g-name">S. Scheffler<div class="ctry">USA</div></div><div class="g-r">68</div><div class="g-r">71</div><div class="g-r">72</div><div class="g-r">69</div><div class="g-total under">−8</div><div class="g-earn">$1,008,000</div><div class="g-sqrt">1,004.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T8</div><div class="g-name">C. Conners<div class="ctry">CAN</div></div><div class="g-r">68</div><div class="g-r">70</div><div class="g-r">70</div><div class="g-r">75</div><div class="g-total under">−5</div><div class="g-earn">$588,000</div><div class="g-sqrt">766.8</div></div>
+            <div class="golfer-row"><div class="g-pos">T42</div><div class="g-name">A. Bhatia<div class="ctry">USA</div></div><div class="g-r">70</div><div class="g-r">76</div><div class="g-r">75</div><div class="g-r">71</div><div class="g-total over">+4</div><div class="g-earn">$75,600</div><div class="g-sqrt">275.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T21</div><div class="g-name">D. Berger<div class="ctry">USA</div></div><div class="g-r">71</div><div class="g-r">73</div><div class="g-r">73</div><div class="g-r">69</div><div class="g-total under">−2</div><div class="g-earn">$210,000</div><div class="g-sqrt">458.3</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">G. Woodland<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">C. Ortiz<div class="ctry">MEX</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+          </div>
+        </div>
+
+        <!-- 6. Sumer -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">6</div>
+            <div><div class="entry-name">Sumer</div></div>
+            <div class="entry-col"><div class="val under">−12</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$2,599,538</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">2,312.9</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">T21</div><div class="g-name">T. Fleetwood<div class="ctry">ENG</div></div><div class="g-r">73</div><div class="g-r">69</div><div class="g-r">75</div><div class="g-r">69</div><div class="g-total under">−2</div><div class="g-earn">$210,000</div><div class="g-sqrt">458.3</div></div>
+            <div class="golfer-row"><div class="g-pos">2</div><div class="g-name">J. Rose<div class="ctry">ENG</div></div><div class="g-r">65</div><div class="g-r">71</div><div class="g-r">75</div><div class="g-r">66</div><div class="g-total under">−11</div><div class="g-earn">$2,268,000</div><div class="g-sqrt">1,506.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">N. Højgaard<div class="ctry">DEN</div></div><div class="g-r">76</div><div class="g-r">74</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T32</div><div class="g-name">M. McNealy<div class="ctry">USA</div></div><div class="g-r">72</div><div class="g-r">73</div><div class="g-r">71</div><div class="g-r">73</div><div class="g-total over">+1</div><div class="g-earn">$121,538</div><div class="g-sqrt">348.6</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">B. Griffin<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">A. Noren<div class="ctry">SWE</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+          </div>
+        </div>
+
+        <!-- 7. Ragini -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">7</div>
+            <div><div class="entry-name">Ragini</div></div>
+            <div class="entry-col"><div class="val over">+7</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$601,389</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">1,709.0</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">T40</div><div class="g-name">M. Fitzpatrick<div class="ctry">ENG</div></div><div class="g-r">71</div><div class="g-r">73</div><div class="g-r">74</div><div class="g-r">73</div><div class="g-total over">+3</div><div class="g-earn">$88,200</div><div class="g-sqrt">297.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T21</div><div class="g-name">H. Matsuyama<div class="ctry">JPN</div></div><div class="g-r">73</div><div class="g-r">68</div><div class="g-r">79</div><div class="g-r">66</div><div class="g-total under">−2</div><div class="g-earn">$210,000</div><div class="g-sqrt">458.3</div></div>
+            <div class="golfer-row"><div class="g-pos">T36</div><div class="g-name">P. Cantlay<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">72</div><div class="g-r">73</div><div class="g-r">71</div><div class="g-total over">+2</div><div class="g-earn">$101,063</div><div class="g-sqrt">317.9</div></div>
+            <div class="golfer-row"><div class="g-pos">T36</div><div class="g-name">J. Thomas<div class="ctry">USA</div></div><div class="g-r">73</div><div class="g-r">71</div><div class="g-r">76</div><div class="g-r">70</div><div class="g-total over">+2</div><div class="g-earn">$101,063</div><div class="g-sqrt">317.9</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">C. Smith<div class="ctry">AUS</div></div><div class="g-r">71</div><div class="g-r">78</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T36</div><div class="g-name">B. Harman<div class="ctry">USA</div></div><div class="g-r">71</div><div class="g-r">71</div><div class="g-r">77</div><div class="g-r">71</div><div class="g-total over">+2</div><div class="g-earn">$101,063</div><div class="g-sqrt">317.9</div></div>
+          </div>
+        </div>
+
+        <!-- 8. Jai -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">8</div>
+            <div><div class="entry-name">Jai</div></div>
+            <div class="entry-col"><div class="val under">−2</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$634,200</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">1,334.9</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">T14</div><div class="g-name">J. Rahm<div class="ctry">ESP</div></div><div class="g-r">75</div><div class="g-r">71</div><div class="g-r">70</div><div class="g-r">69</div><div class="g-total under">−3</div><div class="g-earn">$336,000</div><div class="g-sqrt">579.7</div></div>
+            <div class="golfer-row"><div class="g-pos">T21</div><div class="g-name">V. Hovland<div class="ctry">NOR</div></div><div class="g-r">71</div><div class="g-r">69</div><div class="g-r">73</div><div class="g-r">73</div><div class="g-total under">−2</div><div class="g-earn">$210,000</div><div class="g-sqrt">458.3</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">C. Gotterup<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">J. Knapp<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">J. Bridgeman<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T40</div><div class="g-name">N. Taylor<div class="ctry">CAN</div></div><div class="g-r">73</div><div class="g-r">71</div><div class="g-r">74</div><div class="g-r">73</div><div class="g-total over">+3</div><div class="g-earn">$88,200</div><div class="g-sqrt">297.0</div></div>
+          </div>
+        </div>
+
+        <!-- 9. William -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">9</div>
+            <div><div class="entry-name">William</div></div>
+            <div class="entry-col"><div class="val over">+4</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$388,920</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">809.7</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">C. Young<div class="ctry">USA</div></div><div class="g-r">72</div><div class="g-r">79</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">50</div><div class="g-name">J.J. Spaun<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">72</div><div class="g-r">74</div><div class="g-r">75</div><div class="g-total over">+7</div><div class="g-earn">$52,920</div><div class="g-sqrt">230.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">S. Straka<div class="ctry">AUT</div></div><div class="g-r">78</div><div class="g-r">71</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">R. Fox<div class="ctry">NZL</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">M. Penge<div class="ctry">ENG</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T14</div><div class="g-name">M. McCarty<div class="ctry">USA</div></div><div class="g-r">71</div><div class="g-r">68</div><div class="g-r">75</div><div class="g-r">71</div><div class="g-total under">−3</div><div class="g-earn">$336,000</div><div class="g-sqrt">579.7</div></div>
+          </div>
+        </div>
+
+        <!-- 10. Josh -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">10</div>
+            <div><div class="entry-name">Josh</div></div>
+            <div class="entry-col"><div class="val under">−5</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$588,000</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">766.8</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">T8</div><div class="g-name">X. Schauffele<div class="ctry">USA</div></div><div class="g-r">73</div><div class="g-r">69</div><div class="g-r">70</div><div class="g-r">71</div><div class="g-total under">−5</div><div class="g-earn">$588,000</div><div class="g-sqrt">766.8</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">R. MacIntyre<div class="ctry">SCO</div></div><div class="g-r">75</div><div class="g-r">75</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">R. Henley<div class="ctry">USA</div></div><div class="g-r">79</div><div class="g-r">68</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">A. Scott<div class="ctry">AUS</div></div><div class="g-r">77</div><div class="g-r">72</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">R. Højgaard<div class="ctry">DEN</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">H. Hall<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+          </div>
+        </div>
+
+      </div><!-- /friends-entries -->
+
+      <!-- ════════ STERN POOL ════════ -->
+      <div class="entry-list" id="stern-entries" style="display:none">
+
+        <!-- 1. Stack -->
+        <div class="entry-card rank1 expanded">
+          <div class="entry-header">
+            <div class="entry-rank top3">1</div>
+            <div><div class="entry-name">Stack</div></div>
+            <div class="entry-col"><div class="val under">−9</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$3,534,263</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">3,379.5</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">4</div><div class="g-name">S. Scheffler<div class="ctry">USA</div></div><div class="g-r">68</div><div class="g-r">71</div><div class="g-r">72</div><div class="g-r">69</div><div class="g-total under">−8</div><div class="g-earn">$1,008,000</div><div class="g-sqrt">1,004.0</div></div>
+            <div class="golfer-row"><div class="g-pos">49</div><div class="g-name">Min Woo Lee<div class="ctry">AUS</div></div><div class="g-r">71</div><div class="g-r">72</div><div class="g-r">77</div><div class="g-r">74</div><div class="g-total over">+6</div><div class="g-earn">$54,600</div><div class="g-sqrt">233.7</div></div>
+            <div class="golfer-row"><div class="g-pos">2</div><div class="g-name">J. Rose<div class="ctry">ENG</div></div><div class="g-r">65</div><div class="g-r">71</div><div class="g-r">75</div><div class="g-r">66</div><div class="g-total under">−11</div><div class="g-earn">$2,268,000</div><div class="g-sqrt">1,506.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T36</div><div class="g-name">J. Thomas<div class="ctry">USA</div></div><div class="g-r">73</div><div class="g-r">71</div><div class="g-r">76</div><div class="g-r">70</div><div class="g-total over">+2</div><div class="g-earn">$101,063</div><div class="g-sqrt">317.9</div></div>
+            <div class="golfer-row"><div class="g-pos">T36</div><div class="g-name">P. Cantlay<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">72</div><div class="g-r">73</div><div class="g-r">71</div><div class="g-total over">+2</div><div class="g-earn">$101,063</div><div class="g-sqrt">317.9</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">R. Højgaard<div class="ctry">DEN</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+          </div>
+        </div>
+
+        <!-- 2. Erik -->
+        <div class="entry-card rank2">
+          <div class="entry-header">
+            <div class="entry-rank top3">2</div>
+            <div><div class="entry-name">Erik</div></div>
+            <div class="entry-col"><div class="val under">−6</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$1,747,380</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">2,668.3</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">T5</div><div class="g-name">B. DeChambeau<div class="ctry">USA</div></div><div class="g-r">69</div><div class="g-r">68</div><div class="g-r">69</div><div class="g-r">75</div><div class="g-total under">−7</div><div class="g-earn">$798,000</div><div class="g-sqrt">893.3</div></div>
+            <div class="golfer-row"><div class="g-pos">T21</div><div class="g-name">T. Fleetwood<div class="ctry">ENG</div></div><div class="g-r">73</div><div class="g-r">69</div><div class="g-r">75</div><div class="g-r">69</div><div class="g-total under">−2</div><div class="g-earn">$210,000</div><div class="g-sqrt">458.3</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">C. Gotterup<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T42</div><div class="g-name">A. Bhatia<div class="ctry">USA</div></div><div class="g-r">70</div><div class="g-r">76</div><div class="g-r">75</div><div class="g-r">71</div><div class="g-total over">+4</div><div class="g-earn">$75,600</div><div class="g-sqrt">275.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T42</div><div class="g-name">S. Lowry<div class="ctry">IRL</div></div><div class="g-r">71</div><div class="g-r">68</div><div class="g-r">72</div><div class="g-r">81</div><div class="g-total over">+4</div><div class="g-earn">$75,600</div><div class="g-sqrt">275.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T8</div><div class="g-name">J. Day<div class="ctry">AUS</div></div><div class="g-r">70</div><div class="g-r">70</div><div class="g-r">71</div><div class="g-r">72</div><div class="g-total under">−5</div><div class="g-earn">$588,000</div><div class="g-sqrt">766.8</div></div>
+          </div>
+        </div>
+
+        <!-- 3. Jai -->
+        <div class="entry-card rank3">
+          <div class="entry-header">
+            <div class="entry-rank top3">3</div>
+            <div><div class="entry-name">Jai</div><div class="entry-owner" style="color:var(--cut)">⚠ T. Hatton lookup error — corrected from ESPN</div></div>
+            <div class="entry-col"><div class="val under">−14</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$4,536,000</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">2,629.1</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">1</div><div class="g-name">R. McIlroy<div class="ctry">NIR</div></div><div class="g-r">72</div><div class="g-r">66</div><div class="g-r">66</div><div class="g-r">73</div><div class="g-total under">−11</div><div class="g-earn">$4,200,000</div><div class="g-sqrt">2,049.4</div></div>
+            <div class="golfer-row"><div class="g-pos">T14</div><div class="g-name">C. Morikawa<div class="ctry">USA</div></div><div class="g-r">72</div><div class="g-r">69</div><div class="g-r">72</div><div class="g-r">72</div><div class="g-total under">−3</div><div class="g-earn">$336,000</div><div class="g-sqrt">579.7</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">B. Koepka<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">75</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">R. MacIntyre<div class="ctry">SCO</div></div><div class="g-r">75</div><div class="g-r">75</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">A. Scott<div class="ctry">AUS</div></div><div class="g-r">77</div><div class="g-r">72</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">T. Hatton<div class="ctry">ENG</div><div class="error-note">⚠ "Tyrell" typo in sheet — ESPN corrected</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0*</div><div class="g-sqrt">0.0*</div></div>
+          </div>
+        </div>
+
+        <!-- 4. Josh (Stern) -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">4</div>
+            <div><div class="entry-name">Josh</div></div>
+            <div class="entry-col"><div class="val under">−7</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$1,459,238</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">2,522.3</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">7</div><div class="g-name">L. Åberg<div class="ctry">SWE</div></div><div class="g-r">68</div><div class="g-r">73</div><div class="g-r">69</div><div class="g-r">72</div><div class="g-total under">−6</div><div class="g-earn">$703,500</div><div class="g-sqrt">838.8</div></div>
+            <div class="golfer-row"><div class="g-pos">T40</div><div class="g-name">M. Fitzpatrick<div class="ctry">ENG</div></div><div class="g-r">71</div><div class="g-r">73</div><div class="g-r">74</div><div class="g-r">73</div><div class="g-total over">+3</div><div class="g-earn">$88,200</div><div class="g-sqrt">297.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T21</div><div class="g-name">V. Hovland<div class="ctry">NOR</div></div><div class="g-r">71</div><div class="g-r">69</div><div class="g-r">73</div><div class="g-r">73</div><div class="g-total under">−2</div><div class="g-earn">$210,000</div><div class="g-sqrt">458.3</div></div>
+            <div class="golfer-row"><div class="g-pos">T14</div><div class="g-name">J. Spieth<div class="ctry">USA</div></div><div class="g-r">73</div><div class="g-r">73</div><div class="g-r">69</div><div class="g-r">70</div><div class="g-total under">−3</div><div class="g-earn">$336,000</div><div class="g-sqrt">579.7</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">D. Johnson<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">73</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T32</div><div class="g-name">M. McNealy<div class="ctry">USA</div></div><div class="g-r">72</div><div class="g-r">73</div><div class="g-r">71</div><div class="g-r">73</div><div class="g-total over">+1</div><div class="g-earn">$121,538</div><div class="g-sqrt">348.6</div></div>
+          </div>
+        </div>
+
+        <!-- 5. Brandon -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">5</div>
+            <div><div class="entry-name">Brandon</div><div class="entry-owner" style="color:var(--cut)">⚠ "John Rahm" typo in sheet — corrected from ESPN</div></div>
+            <div class="entry-col"><div class="val under">−6</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$1,699,180</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">1,900.6</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">J. Rahm<div class="ctry">ESP</div><div class="error-note">⚠ "John" typo in sheet — ESPN corrected</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0*</div><div class="g-sqrt">0.0*</div></div>
+            <div class="golfer-row"><div class="g-pos">T21</div><div class="g-name">H. Matsuyama<div class="ctry">JPN</div></div><div class="g-r">73</div><div class="g-r">68</div><div class="g-r">79</div><div class="g-r">66</div><div class="g-total under">−2</div><div class="g-earn">$210,000</div><div class="g-sqrt">458.3</div></div>
+            <div class="golfer-row"><div class="g-pos">3</div><div class="g-name">P. Reed<div class="ctry">USA</div></div><div class="g-r">71</div><div class="g-r">70</div><div class="g-r">69</div><div class="g-r">69</div><div class="g-total under">−9</div><div class="g-earn">$1,428,000</div><div class="g-sqrt">1,195.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">R. Henley<div class="ctry">USA</div></div><div class="g-r">79</div><div class="g-r">68</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">T46</div><div class="g-name">S. Burns<div class="ctry">USA</div></div><div class="g-r">73</div><div class="g-r">70</div><div class="g-r">75</div><div class="g-r">75</div><div class="g-total over">+5</div><div class="g-earn">$61,180</div><div class="g-sqrt">247.4</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">N. Højgaard<div class="ctry">DEN</div></div><div class="g-r">76</div><div class="g-r">74</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+          </div>
+        </div>
+
+        <!-- 6. Stehl -->
+        <div class="entry-card">
+          <div class="entry-header">
+            <div class="entry-rank">6</div>
+            <div><div class="entry-name">Stehl</div></div>
+            <div class="entry-col"><div class="val over">+2</div><div class="lbl">Total</div></div>
+            <div class="entry-col"><div class="val">F</div><div class="lbl">Rd</div></div>
+            <div class="entry-col"><div class="val">$640,920</div><div class="lbl">Earnings</div></div>
+            <div class="entry-col"><div class="val sqrt-score">996.9</div><div class="lbl">√ Score</div></div>
+            <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          </div>
+          <div class="golfer-table">
+            <div class="golfer-header-row"><div>Pos</div><div>Golfer</div><div>R1</div><div>R2</div><div>R3</div><div>R4</div><div>Earnings</div><div>√ Score</div></div>
+            <div class="golfer-row"><div class="g-pos">T8</div><div class="g-name">X. Schauffele<div class="ctry">USA</div></div><div class="g-r">73</div><div class="g-r">69</div><div class="g-r">70</div><div class="g-r">71</div><div class="g-total under">−5</div><div class="g-earn">$588,000</div><div class="g-sqrt">766.8</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">C. Young<div class="ctry">USA</div></div><div class="g-r">72</div><div class="g-r">79</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+            <div class="golfer-row"><div class="g-pos">50</div><div class="g-name">J.J. Spaun<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">72</div><div class="g-r">74</div><div class="g-r">75</div><div class="g-total over">+7</div><div class="g-earn">$52,920</div><div class="g-sqrt">230.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">J. Knapp<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row wd-row"><div class="g-pos">N/F</div><div class="g-name">B. Griffin<div class="ctry">USA</div></div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total even">N/F</div><div class="g-earn">$0</div><div class="g-sqrt">0.0</div></div>
+            <div class="golfer-row cut-row"><div class="g-pos">CUT</div><div class="g-name">K. Bradley<div class="ctry">USA</div></div><div class="g-r">74</div><div class="g-r">73</div><div class="g-r">—</div><div class="g-r">—</div><div class="g-total" style="color:var(--cut)">CUT</div><div class="g-earn" style="color:var(--cut)">$0</div><div class="g-sqrt" style="color:var(--cut)">0.0</div></div>
+          </div>
+        </div>
+
+      </div><!-- /stern-entries -->
+    </div><!-- /left col -->
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="widget">
+        <div class="widget-header"><h3>Pool Summary</h3><span id="sidebar-pool-name">Friends</span></div>
+        <div class="widget-body">
+          <div class="summary-grid">
+            <div class="summary-stat"><div class="s-val" id="s-entries">10</div><div class="s-lbl">Entries</div></div>
+            <div class="summary-stat"><div class="s-val">Final</div><div class="s-lbl">Round</div></div>
+            <div class="summary-stat"><div class="s-val" style="font-size:1.05rem">$21M</div><div class="s-lbl">Purse</div></div>
+            <div class="summary-stat"><div class="s-val">50</div><div class="s-lbl">Made Cut</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-header"><h3>Final Leaderboard</h3><span>2025 Masters</span></div>
+        <div class="widget-body">
+          <div class="field-row" style="font-size:.65rem;font-weight:600;color:var(--text-light);letter-spacing:.08em;text-transform:uppercase;padding-bottom:.3rem">
+            <div></div><div>Player</div><div style="text-align:center">Tot</div><div style="text-align:right">Score</div>
+          </div>
+          <div class="field-row"><div class="f-pos">1</div><div class="f-name">R. McIlroy</div><div class="f-thru">277</div><div class="f-score under">−11</div></div>
+          <div class="field-row"><div class="f-pos">2</div><div class="f-name">J. Rose</div><div class="f-thru">277</div><div class="f-score under">−11</div></div>
+          <div class="field-row"><div class="f-pos">3</div><div class="f-name">P. Reed</div><div class="f-thru">279</div><div class="f-score under">−9</div></div>
+          <div class="field-row"><div class="f-pos">4</div><div class="f-name">S. Scheffler</div><div class="f-thru">280</div><div class="f-score under">−8</div></div>
+          <div class="field-row"><div class="f-pos">T5</div><div class="f-name">S. Im</div><div class="f-thru">281</div><div class="f-score under">−7</div></div>
+          <div class="field-row"><div class="f-pos">T5</div><div class="f-name">B. DeChambeau</div><div class="f-thru">281</div><div class="f-score under">−7</div></div>
+          <div class="field-row"><div class="f-pos">7</div><div class="f-name">L. Åberg</div><div class="f-thru">282</div><div class="f-score under">−6</div></div>
+          <div class="field-row"><div class="f-pos">T8</div><div class="f-name">Z. Johnson</div><div class="f-thru">283</div><div class="f-score under">−5</div></div>
+          <div class="field-row"><div class="f-pos">T8</div><div class="f-name">X. Schauffele</div><div class="f-thru">283</div><div class="f-score under">−5</div></div>
+          <div class="field-row"><div class="f-pos">T8</div><div class="f-name">J. Day</div><div class="f-thru">283</div><div class="f-score under">−5</div></div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-header"><h3>Final Payouts</h3><span>$21M Purse</span></div>
+        <div class="widget-body">
+          <div class="payout-row"><span class="payout-pos">1st</span><span class="payout-amt">$4,200,000</span></div>
+          <div class="payout-row"><span class="payout-pos">2nd</span><span class="payout-amt">$2,268,000</span></div>
+          <div class="payout-row"><span class="payout-pos">3rd</span><span class="payout-amt">$1,428,000</span></div>
+          <div class="payout-row"><span class="payout-pos">4th</span><span class="payout-amt">$1,008,000</span></div>
+          <div class="payout-row"><span class="payout-pos">T5</span><span class="payout-amt">$798,000</span></div>
+          <div class="payout-row"><span class="payout-pos">7th</span><span class="payout-amt">$703,500</span></div>
+          <div class="payout-row"><span class="payout-pos">T8</span><span class="payout-amt">$588,000</span></div>
+          <div class="payout-row"><span class="payout-pos">T12</span><span class="payout-amt">$462,000</span></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    Data sourced from ESPN · <span>The Masters Pool</span> · Not affiliated with Augusta National
+  </footer>
+</div><!-- /app -->
+
+<script>
+  function checkPassword() {
+    const pw = document.getElementById('gate-pw').value.trim();
+    const input = document.getElementById('gate-pw');
+    const errEl = document.getElementById('gate-error');
+    if (pw === 'friends2026') {
+      enterApp('friends');
+    } else if (pw === 'stern2026') {
+      enterApp('stern');
+    } else {
+      input.classList.add('error');
+      errEl.textContent = 'Incorrect password. Please try again.';
+      setTimeout(() => input.classList.remove('error'), 400);
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  function enterApp(pool) {
+    document.getElementById('gate').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+    const isFriends = pool === 'friends';
+    document.getElementById('pool-title-text').textContent = isFriends ? 'Friends Pool' : 'Stern Pool';
+    document.getElementById('active-pool-name').textContent = isFriends ? 'Friends Pool' : 'Stern Pool';
+    document.getElementById('standings-subtitle').textContent = isFriends ? 'Friends Pool · 10 entries' : 'Stern Pool · 6 entries';
+    document.getElementById('sidebar-pool-name').textContent = isFriends ? 'Friends' : 'Stern';
+    document.getElementById('s-entries').textContent = isFriends ? '10' : '6';
+    document.getElementById('friends-entries').style.display = isFriends ? 'flex' : 'none';
+    document.getElementById('stern-entries').style.display = isFriends ? 'none' : 'flex';
+  }
+
+  document.getElementById('gate-pw').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+  });
+
+  document.addEventListener('click', e => {
+    const header = e.target.closest('.entry-header');
+    if (header) header.closest('.entry-card').classList.toggle('expanded');
+  });
+</script>
+</body>
+</html>

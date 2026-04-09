@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"C:\\\\Users\\\\jvaid\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\python.exe\" -m pip install openpyxl -q)",
+      "Read(//c/Users/jvaid/Downloads/**)",
+      "Bash(python3 -c ':*)",
+      "Bash(npm --version)",
+      "Bash(cmd.exe /c \"node --version && npm --version\")",
+      "Bash(cmd.exe /c \"where node 2>nul || echo NOT_FOUND\")",
+      "Bash(cmd.exe /c \"node --version\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(powershell.exe -Command ':*)",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files' -Filter 'node*' -ErrorAction SilentlyContinue | Select Name\")"
+    ]
+  }
+}

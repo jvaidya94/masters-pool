@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --green:      #06402B;
+    --green-mid:  #0A5C3E;
+    --green-light:#0F7A52;
+    --cream:      #F5EFE0;
+    --cream-dark: #EDE4CF;
+    --gold:       #C9A24A;
+    --gold-light: #E2C47A;
+    --cut:        #8B0000;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--cream);
+    color: #1A1A1A;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Live pulse dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+.pulse-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+/* Card expand/collapse chevron */
+.chevron-icon {
+  transition: transform 0.2s ease;
+}
+.chevron-icon.open {
+  transform: rotate(180deg);
+}
