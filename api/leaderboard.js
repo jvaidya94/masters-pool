@@ -5,8 +5,17 @@ let cache = null
 let cacheTime = 0
 const CACHE_TTL = 60_000
 
-const ESPN_URL =
-  'https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard'
+// Try multiple ESPN endpoints — Masters is not a PGA Tour event
+const ESPN_URLS = [
+  'https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard',
+  'https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard',
+  'https://site.api.espn.com/apis/site/v2/sports/golf/masters/leaderboard',
+]
+
+const FETCH_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (compatible; MastersPool/1.0)',
+  'Accept': 'application/json',
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -16,10 +25,22 @@ export default async function handler(req, res) {
     return res.json({ ...cache, fromCache: true })
   }
 
+  let raw = null
+  let lastError = null
+
+  for (const url of ESPN_URLS) {
+    try {
+      const upstream = await fetch(url, { headers: FETCH_HEADERS })
+      if (!upstream.ok) { lastError = `ESPN ${url} returned ${upstream.status}`; continue }
+      raw = await upstream.json()
+      break
+    } catch (err) {
+      lastError = err.message
+    }
+  }
+
   try {
-    const upstream = await fetch(ESPN_URL)
-    if (!upstream.ok) throw new Error(`ESPN returned ${upstream.status}`)
-    const raw = await upstream.json()
+    if (!raw) throw new Error(lastError ?? 'All ESPN endpoints failed')
 
     // ESPN wraps events under sports[0].leagues[0].events OR top-level events
     const events =
@@ -34,9 +55,14 @@ export default async function handler(req, res) {
     )
 
     if (!mastersEvent) {
-      // Return empty payload — UI will show graceful empty state
-      const empty = { event: null, competitors: [], cachedAt: Date.now() }
-      cache = empty
+      // Return empty payload with debug info about what events we did find
+      const empty = {
+        event: null,
+        competitors: [],
+        cachedAt: Date.now(),
+        debug_events: events.map((e) => e.name ?? e.shortName ?? '?'),
+      }
+      cache = { event: null, competitors: [], cachedAt: Date.now() }
       cacheTime = Date.now()
       return res.json(empty)
     }
