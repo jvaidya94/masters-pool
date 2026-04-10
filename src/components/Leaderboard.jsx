@@ -16,14 +16,21 @@ export default function Leaderboard({ entries, pool, event }) {
       </div>
 
       <div className="flex flex-col gap-3">
-        {entries.map((entry, i) => (
-          <TeamCard
-            key={entry.id}
-            entry={entry}
-            rank={i + 1}
-            defaultExpanded={i < 3}
-          />
-        ))}
+        {entries.map((entry, i) => {
+          // Compute tied rank: find how many entries share the same √ score
+          const sameScore = entries.filter((e) => e.totalSqrt === entry.totalSqrt)
+          const rankNum   = entries.findIndex((e) => e.totalSqrt === entry.totalSqrt) + 1
+          const rankLabel = sameScore.length > 1 ? `T${rankNum}` : `${rankNum}`
+          return (
+            <TeamCard
+              key={entry.id}
+              entry={entry}
+              rank={rankNum}
+              rankLabel={rankLabel}
+              defaultExpanded={i < 3}
+            />
+          )
+        })}
       </div>
 
       {entries.length === 0 && (

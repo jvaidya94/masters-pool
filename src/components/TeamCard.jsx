@@ -3,7 +3,7 @@ import { formatScore, parseScore } from '../lib/espn.js'
 
 const RANK_COLORS = { 1: 'var(--gold)', 2: '#A8A9AD', 3: '#C47A30' }
 
-export default function TeamCard({ entry, rank, defaultExpanded = false }) {
+export default function TeamCard({ entry, rank, rankLabel, defaultExpanded = false }) {
   const [open, setOpen] = useState(defaultExpanded)
 
   const scoreNum   = entry.totalScore ?? 0
@@ -29,9 +29,9 @@ export default function TeamCard({ entry, rank, defaultExpanded = false }) {
         {/* Rank */}
         <span
           className="font-display text-lg font-bold text-center"
-          style={{ color: rank <= 3 ? 'var(--green)' : 'var(--gold)' }}
+          style={{ color: rank <= 3 ? 'var(--green)' : 'var(--gold)', fontSize: rankLabel?.startsWith('T') ? '0.85rem' : undefined }}
         >
-          {rank}
+          {rankLabel ?? rank}
         </span>
 
         {/* Name */}

@@ -44,19 +44,23 @@ export default async function handler(req, res) {
     }
 
     const competition = mastersEvent.competitions?.[0] ?? {}
-    const competitors = (competition.competitors ?? []).map(parseCompetitor)
+    const currentRound = competition.status?.period ?? 1
+    const competitors = (competition.competitors ?? []).map((c) => parseCompetitor(c, currentRound))
 
-    // Debug: expose raw ESPN fields for first active competitor so we can identify stat names
+    // Debug: expose raw ESPN fields — find a player who has started R2
     const debugComp = (competition.competitors ?? []).find(
-      (c) => !c.status?.type?.name?.includes('CUT') && !c.status?.type?.name?.includes('WD')
-    )
+      (c) => (c.status?.thru ?? 0) > 0 &&
+             !c.status?.type?.name?.includes('CUT') &&
+             !c.status?.type?.name?.includes('WD')
+    ) ?? (competition.competitors ?? [])[0]
     const debug = debugComp ? {
-      name:          debugComp.athlete?.displayName,
-      score_field:   debugComp.score,
-      status_dv:     debugComp.status?.displayValue,
-      status_thru:   debugComp.status?.thru,
-      stat_names:    (debugComp.statistics ?? []).map((s) => `${s.name}=${s.displayValue}`),
-      linescore_vals: (debugComp.linescores ?? []).map((l) => `p${l.period?.number}:${l.value}:${l.displayValue}`),
+      name:           debugComp.athlete?.displayName,
+      currentRound,
+      score_field:    debugComp.score,
+      status_dv:      debugComp.status?.displayValue,
+      status_thru:    debugComp.status?.thru,
+      stat_names:     (debugComp.statistics ?? []).map((s) => `${s.name}=${s.displayValue}`),
+      linescore_vals: (debugComp.linescores ?? []).map((l) => `period=${l.period?.number} val=${l.value} dv=${l.displayValue} type=${l.type}`),
     } : null
 
     const payload = {
@@ -82,7 +86,9 @@ export default async function handler(req, res) {
   }
 }
 
-function parseCompetitor(c) {
+const AUGUSTA_PAR = 72
+
+function parseCompetitor(c, currentRound = 1) {
   const statsMap = Object.fromEntries(
     (c.statistics ?? []).map((s) => [s.name, s])
   )
@@ -92,11 +98,13 @@ function parseCompetitor(c) {
   const isWD  = statusName.includes('WD') || statusName.includes('WITHDRAWN')
   const thru  = c.status?.thru ?? 0
 
-  // Round scores — ESPN linescores have no reliable period.number in this feed.
-  // Real rounds have a numeric stroke value; placeholders use displayValue "-".
-  const rounds = (c.linescores ?? [])
-    .filter((r) => r.displayValue && r.displayValue !== '-' && r.displayValue !== '--')
-    .map((r) => (r.value != null ? Number(r.value) : null))
+  // Round scores — ESPN linescores store stroke totals per round.
+  // Filter out placeholder entries (displayValue "-" or value 0 with no display).
+  const allLinescores = (c.linescores ?? [])
+  const rounds = allLinescores
+    .filter((r) => r.value != null && r.value > 0 &&
+                   r.displayValue && r.displayValue !== '-' && r.displayValue !== '--')
+    .map((r) => Number(r.value))
 
   // Earnings — stat is named "officialAmount" in ESPN's Masters feed.
   let earnings = 0
@@ -108,15 +116,24 @@ function parseCompetitor(c) {
         : parseInt((earnStat.displayValue ?? '').replace(/[^0-9]/g, ''), 10) || 0
   }
 
-  // Score to par — stat is named "scoreToPar" in ESPN's Masters feed.
-  // "-" / "--" means the player hasn't started yet; treat as E.
+  // Total score to par — stat "scoreToPar" in ESPN's Masters feed.
   const rawScore = statsMap.scoreToPar?.displayValue ?? c.score?.displayValue ?? '-'
   const scoreClean = (rawScore === '-' || rawScore === '--') ? 'E' : rawScore
-  const parsedN   = parseInt(scoreClean, 10)
-  const scoreRaw  = !isNaN(parsedN) && Math.abs(parsedN) > 99 ? 'E' : scoreClean
+  const parsedTotal = parseInt(scoreClean, 10)
+  const scoreRaw = !isNaN(parsedTotal) && Math.abs(parsedTotal) > 99 ? 'E' : scoreClean
+  const totalToPar = isNaN(parsedTotal) ? 0 : parsedTotal
 
-  // Today's round — in R1 equals the total; only set once the player has started.
-  const todayRaw = thru > 0 ? scoreRaw : null
+  // Today's round score to par — derived by subtracting completed rounds.
+  // completedRounds = rounds before today that are fully in the books.
+  // Each completed round: to-par = strokes - AUGUSTA_PAR.
+  let todayRaw = null
+  if (thru > 0) {
+    const completedRoundCount = currentRound - 1
+    const completedStrokes = rounds.slice(0, completedRoundCount).reduce((s, r) => s + r, 0)
+    const completedToPar   = completedStrokes - (completedRoundCount * AUGUSTA_PAR)
+    const todayToPar       = totalToPar - completedToPar
+    todayRaw = todayToPar === 0 ? 'E' : todayToPar > 0 ? `+${todayToPar}` : `${todayToPar}`
+  }
 
   return {
     id:       c.athlete?.id ?? null,
