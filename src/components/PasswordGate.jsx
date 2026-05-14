@@ -26,7 +26,7 @@ export default function PasswordGate({ pools, onLogin }) {
     >
       {/* Logo */}
       <div className="mb-6">
-        <PGALogo width={160} height={200} />
+        <PGALogo width={160} height={200} color="white" />
       </div>
 
       {/* Card */}
@@ -37,7 +37,7 @@ export default function PasswordGate({ pools, onLogin }) {
       >
         <div className="text-center">
           <h2
-            className="font-display text-2xl font-semibold tracking-wide"
+            className="font-display text-2xl font-semibold tracking-wide whitespace-nowrap"
             style={{ color: 'var(--gold)' }}
           >
             PGA Championship Pool
