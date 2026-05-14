@@ -9,7 +9,11 @@ import Sidebar      from './components/Sidebar.jsx'
 const POLL_MS = 60_000
 
 export default function App() {
-  const [activePool,   setActivePool]   = useState(null)
+  const [activePool, setActivePool] = useState(() => {
+    // Restore session from localStorage so refresh doesn't log users out
+    const saved = localStorage.getItem('poolId')
+    return saved ? (poolsData.pools.find((p) => p.id === saved) ?? null) : null
+  })
   const [competitors,  setCompetitors]  = useState([])
   const [event,        setEvent]        = useState(null)
   const [lastUpdated,  setLastUpdated]  = useState(null)
@@ -46,6 +50,7 @@ export default function App() {
   function handleLogin(poolId) {
     const pool = poolsData.pools.find((p) => p.id === poolId)
     setActivePool(pool ?? null)
+    if (pool) localStorage.setItem('poolId', poolId)
   }
 
   if (!activePool) {
