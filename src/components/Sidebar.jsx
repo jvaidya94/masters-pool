@@ -50,25 +50,26 @@ export default function Sidebar({ competitors, event, pool, entries = [] }) {
         </div>
       </Widget>
 
-      {/* Best & Worst score cards */}
+      {/* Best & Worst score cards — sorted by aggregate stroke play total */}
       {entries.length > 0 && (() => {
-        const active = entries.filter((e) => e.totalSqrt > 0)
-        const best   = entries[0]   // already sorted desc by totalSqrt
-        const worst  = entries[entries.length - 1]
+        const byScore = [...entries].sort((a, b) => a.totalScore - b.totalScore)
+        const best  = byScore[0]
+        const worst = byScore[byScore.length - 1]
+        const fmt = (n) => n === 0 ? 'E' : n > 0 ? `+${n}` : `${n}`
         return (
           <div className="grid grid-cols-2 gap-3">
             <PrizeCard
               label="🏆 Best Score"
               name={best?.name}
-              value={best?.totalSqrt.toFixed(1)}
-              sublabel="√ score"
+              value={fmt(best?.totalScore ?? 0)}
+              sublabel="total to par"
               highlight="var(--gold)"
             />
             <PrizeCard
               label="🥄 Worst Score"
               name={worst?.name}
-              value={worst?.totalSqrt.toFixed(1)}
-              sublabel="√ score"
+              value={fmt(worst?.totalScore ?? 0)}
+              sublabel="total to par"
               highlight="var(--cut)"
             />
           </div>
