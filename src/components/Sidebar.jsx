@@ -76,6 +76,28 @@ export default function Sidebar({ competitors, event, pool, entries = [] }) {
         )
       })()}
 
+      {/* Prize pot */}
+      <Widget title="Prize Pot" badge="$200 total">
+        <div className="flex flex-col gap-2">
+          {[
+            { place: '🥇 1st Place',    desc: 'Best √ earnings score', amount: '$150' },
+            { place: '🏆 Best Score',   desc: 'Lowest stroke play total', amount: '$25' },
+            { place: '🥄 Worst Score',  desc: 'Highest stroke play total', amount: '$25' },
+          ].map(({ place, desc, amount }) => (
+            <div key={place} className="flex items-center justify-between py-1.5"
+                 style={{ borderBottom: '1px solid var(--cream-dark)' }}>
+              <div>
+                <div className="text-xs font-semibold" style={{ color: '#1A1A1A' }}>{place}</div>
+                <div className="text-[10px]" style={{ color: '#7A7A7A' }}>{desc}</div>
+              </div>
+              <div className="font-display text-base font-bold" style={{ color: 'var(--gold)' }}>
+                {amount}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Widget>
+
       {/* Tournament leaderboard */}
       <Widget title="Tournament Leaders" badge={isLive ? 'Live' : event?.completed ? 'Final' : '—'}>
         <div className="text-[10px] font-semibold tracking-widest uppercase grid grid-cols-[1.4rem_1fr_2.5rem_2.5rem] gap-2 pb-1.5" style={{ color: '#7A7A7A' }}>
