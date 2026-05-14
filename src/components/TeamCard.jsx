@@ -117,8 +117,18 @@ function GolferRow({ g }) {
   const posLabel   = isCut ? 'CUT' : isWD ? 'WD' : notFound ? 'N/F' : (comp?.position ?? '—')
 
   const rounds  = comp?.rounds ?? []
-  const thru    = comp?.thru ?? ''
+  const thru    = comp?.thru ?? 0
   const todayNum   = comp?.today != null ? parseScore(comp.today) : null
+
+  // Format tee time from ISO string to local time e.g. "1:07 PM"
+  const teeTimeLabel = (() => {
+    if (!comp?.teeTime) return null
+    try {
+      return new Date(comp.teeTime).toLocaleTimeString('en-US', {
+        hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York'
+      })
+    } catch { return null }
+  })()
   const scoreDisplay = isCut || isWD || notFound
     ? (isCut ? 'CUT' : isWD ? 'WD' : 'N/F')
     : (comp ? formatScore(scoreNum) : '—')
@@ -161,9 +171,9 @@ function GolferRow({ g }) {
         }
       </span>
 
-      {/* Thru */}
+      {/* Thru / Tee time */}
       <span className="text-center text-[11px]" style={{ color: '#7A7A7A' }}>
-        {thru || '—'}
+        {thru > 0 ? thru : teeTimeLabel ?? '—'}
       </span>
 
       {/* R1–R4 */}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import MastersLogo from './MastersLogo.jsx'
+import PGALogo from './PGALogo.jsx'
 
 export default function PasswordGate({ pools, onLogin }) {
   const [pw, setPw]       = useState('')
@@ -25,8 +25,8 @@ export default function PasswordGate({ pools, onLogin }) {
       style={{ background: 'var(--green)' }}
     >
       {/* Logo */}
-      <div className="mb-8">
-        <MastersLogo width={180} height={130} />
+      <div className="mb-6">
+        <PGALogo width={160} height={200} />
       </div>
 
       {/* Card */}
@@ -43,7 +43,7 @@ export default function PasswordGate({ pools, onLogin }) {
             PGA Championship Pool
           </h2>
           <p className="mt-1 text-xs tracking-widest uppercase" style={{ color: '#7a9acc' }}>
-            PGA Championship · May 2026
+            Aronimink Golf Club · May 2026
           </p>
         </div>
 

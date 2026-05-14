@@ -1,4 +1,4 @@
-import MastersLogo from './MastersLogo.jsx'
+import PGALogo from './PGALogo.jsx'
 
 export default function Header({ pool, event, lastUpdated }) {
   const isLive      = event && !event.completed && event.status !== 'STATUS_SCHEDULED'
@@ -21,13 +21,13 @@ export default function Header({ pool, event, lastUpdated }) {
 
         {/* Left: logo + pool name */}
         <div className="flex items-center gap-4">
-          <MastersLogo width={52} height={38} />
+          <PGALogo width={40} height={50} />
           <div style={{ borderLeft: '1px solid rgba(201,162,74,0.35)', paddingLeft: '1rem' }}>
             <h1 className="font-display text-xl font-semibold tracking-wide" style={{ color: 'var(--gold)' }}>
               {pool.name}
             </h1>
             <p className="text-[11px] tracking-widest uppercase mt-0.5" style={{ color: '#7a9acc' }}>
-              PGA Championship · May 2026
+              Aronimink Golf Club · May 2026
             </p>
           </div>
         </div>

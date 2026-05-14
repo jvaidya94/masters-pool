@@ -86,7 +86,7 @@ export default async function handler(req, res) {
   }
 }
 
-const AUGUSTA_PAR = 72
+const COURSE_PAR = 72  // Aronimink Golf Club par
 
 function parseCompetitor(c, currentRound = 1) {
   const statsMap = Object.fromEntries(
@@ -130,9 +130,16 @@ function parseCompetitor(c, currentRound = 1) {
   if (thru > 0) {
     const completedRoundCount = currentRound - 1
     const completedStrokes = rounds.slice(0, completedRoundCount).reduce((s, r) => s + r, 0)
-    const completedToPar   = completedStrokes - (completedRoundCount * AUGUSTA_PAR)
+    const completedToPar   = completedStrokes - (completedRoundCount * COURSE_PAR)
     const todayToPar       = totalToPar - completedToPar
     todayRaw = todayToPar === 0 ? 'E' : todayToPar > 0 ? `+${todayToPar}` : `${todayToPar}`
+  }
+
+  // Tee time — for unstarted players status.displayValue is an ISO datetime string
+  let teeTime = null
+  if (thru === 0 && !isCut && !isWD) {
+    const dv = c.status?.displayValue ?? ''
+    if (dv.includes('T') && dv.includes(':')) teeTime = dv
   }
 
   return {
@@ -144,6 +151,7 @@ function parseCompetitor(c, currentRound = 1) {
     today:    todayRaw,
     rounds,
     thru,
+    teeTime,
     earnings,
     isCut,
     isWD,

@@ -13,7 +13,10 @@
       "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files' -Filter 'node*' -ErrorAction SilentlyContinue | Select Name\")",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event=401811947\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const j=JSON.parse\\(d\\); const ev=j.events?.[0]; const comp=ev?.competitions?.[0]?.competitors??[]; console.log\\(comp.map\\(c=>c.athlete?.displayName\\).sort\\(\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e ' *)"
     ]
   }
 }
