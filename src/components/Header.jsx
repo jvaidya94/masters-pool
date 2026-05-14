@@ -47,7 +47,7 @@ export default function Header({ pool, event, lastUpdated }) {
             {badgeLabel}
           </div>
           {updatedStr && (
-            <p className="text-[11px] mt-1.5 tracking-wide" style={{ color: '#7aaa90' }}>
+            <p className="text-[11px] mt-1.5 tracking-wide" style={{ color: '#9BAFD4' }}>
               Updated {updatedStr} · refreshes every 60s
             </p>
           )}

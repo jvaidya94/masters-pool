@@ -42,7 +42,7 @@ export default function PasswordGate({ pools, onLogin }) {
           >
             PGA Championship Pool
           </h2>
-          <p className="mt-1 text-xs tracking-widest uppercase" style={{ color: '#7a9acc' }}>
+          <p className="mt-1 text-xs tracking-widest uppercase" style={{ color: '#9BAFD4' }}>
             Aronimink Golf Club · May 2026
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function PasswordGate({ pools, onLogin }) {
         </p>
       </form>
 
-      <p className="mt-12 text-[10px] tracking-widest uppercase" style={{ color: 'rgba(122,170,144,0.5)' }}>
+      <p className="mt-12 text-[10px] tracking-widest uppercase" style={{ color: 'rgba(155,175,212,0.6)' }}>
         Invitation only
       </p>
     </div>

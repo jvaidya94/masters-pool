@@ -4,11 +4,11 @@
 
 @layer base {
   :root {
-    --green:      #001F5B;
-    --green-mid:  #002B7A;
-    --green-light:#1A4A9E;
-    --cream:      #F0F2F8;
-    --cream-dark: #DDE1EE;
+    --green:      #1D3068;
+    --green-mid:  #2A4280;
+    --green-light:#3A5298;
+    --cream:      #FFFFFF;
+    --cream-dark: #EEF0F5;
     --gold:       #C9A24A;
     --gold-light: #E2C47A;
     --cut:        #8B0000;

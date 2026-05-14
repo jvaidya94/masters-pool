@@ -138,7 +138,7 @@ function Widget({ title, badge, children }) {
           {title}
         </h3>
         {badge && (
-          <span className="text-[10px] tracking-widest uppercase" style={{ color: '#7aaa90' }}>
+          <span className="text-[10px] tracking-widest uppercase" style={{ color: '#9BAFD4' }}>
             {badge}
           </span>
         )}
