@@ -1,24 +1,24 @@
 import { formatScore, parseScore } from '../lib/espn.js'
 import { DEFAULT_PURSE } from '../lib/scoring.js'
 
-// Top Masters payout amounts (scaled from 2025 at $21M purse)
+// PGA Championship payout fractions (based on 2025 structure)
 const PAYOUT_LABELS = [
-  { pos: '1st',  frac: 0.2000 },
+  { pos: '1st',  frac: 0.1800 },
   { pos: '2nd',  frac: 0.1080 },
   { pos: '3rd',  frac: 0.0680 },
   { pos: '4th',  frac: 0.0480 },
-  { pos: 'T5',   frac: 0.0380 },
-  { pos: '7th',  frac: 0.03357 },
-  { pos: 'T8',   frac: 0.0280 },
+  { pos: 'T5',   frac: 0.0385 },
+  { pos: '7th',  frac: 0.0335 },
+  { pos: 'T8',   frac: 0.0290 },
   { pos: 'T12',  frac: 0.0220 },
-  { pos: 'T14',  frac: 0.0160 },
-  { pos: 'T21',  frac: 0.0100 },
-  { pos: 'T27',  frac: 0.00755 },
-  { pos: 'T32',  frac: 0.00579 },
-  { pos: 'T36',  frac: 0.00481 },
-  { pos: 'T42',  frac: 0.0036 },
-  { pos: 'T46',  frac: 0.00291 },
-  { pos: '50th', frac: 0.00252 },
+  { pos: 'T15',  frac: 0.0180 },
+  { pos: 'T20',  frac: 0.0130 },
+  { pos: 'T25',  frac: 0.0095 },
+  { pos: 'T30',  frac: 0.0073 },
+  { pos: 'T40',  frac: 0.0052 },
+  { pos: 'T50',  frac: 0.0038 },
+  { pos: 'T60',  frac: 0.0030 },
+  { pos: '70th', frac: 0.0026 },
 ]
 
 export default function Sidebar({ competitors, event, pool }) {

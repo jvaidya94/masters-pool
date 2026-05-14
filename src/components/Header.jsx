@@ -26,8 +26,8 @@ export default function Header({ pool, event, lastUpdated }) {
             <h1 className="font-display text-xl font-semibold tracking-wide" style={{ color: 'var(--gold)' }}>
               {pool.name}
             </h1>
-            <p className="text-[11px] tracking-widest uppercase mt-0.5" style={{ color: '#7aaa90' }}>
-              Augusta National · April 2026
+            <p className="text-[11px] tracking-widest uppercase mt-0.5" style={{ color: '#7a9acc' }}>
+              PGA Championship · May 2026
             </p>
           </div>
         </div>

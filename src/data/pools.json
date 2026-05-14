@@ -1,6 +1,7 @@
 {
   "_note": "Golfer names must match ESPN displayName exactly (accents OK — the app normalises them). Update picks each year.",
   "purse": 21000000,
+  "_tournament": "PGA Championship 2026",
   "pools": [
     {
       "id": "friends",

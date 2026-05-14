@@ -40,10 +40,10 @@ export default function PasswordGate({ pools, onLogin }) {
             className="font-display text-2xl font-semibold tracking-wide"
             style={{ color: 'var(--gold)' }}
           >
-            The Masters Pool
+            PGA Championship Pool
           </h2>
-          <p className="mt-1 text-xs tracking-widest uppercase" style={{ color: '#7aaa90' }}>
-            Augusta National · April 2026
+          <p className="mt-1 text-xs tracking-widest uppercase" style={{ color: '#7a9acc' }}>
+            PGA Championship · May 2026
           </p>
         </div>
 

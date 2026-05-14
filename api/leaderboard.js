@@ -5,9 +5,9 @@ let cache = null
 let cacheTime = 0
 const CACHE_TTL = 60_000
 
-// Direct tournament ID endpoint — 2026 Masters
-const MASTERS_ID = '401811941'
-const ESPN_URL = `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event=${MASTERS_ID}`
+// 2026 PGA Championship — update ID from espn.com/golf/leaderboard URL
+const TOURNAMENT_ID = '401811941' // TODO: replace with 2026 PGA Championship ID
+const ESPN_URL = `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event=${TOURNAMENT_ID}`
 
 const FETCH_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (compatible; MastersPool/1.0)',
