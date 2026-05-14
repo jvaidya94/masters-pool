@@ -41,7 +41,7 @@ export default function Sidebar({ competitors, event, pool, entries = [] }) {
     <aside className="flex flex-col gap-5">
 
       {/* Pool summary */}
-      <Widget title="Pool Summary" badge={pool.name}>
+      <Widget title="Summary" badge={pool.name}>
         <div className="grid grid-cols-2 gap-2">
           <Stat val={pool.entries?.length ?? '—'} lbl="Entries" />
           <Stat val={event?.round ? `R${event.round}` : (event?.completed ? 'Final' : '—')} lbl="Round" />
