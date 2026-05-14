@@ -10,7 +10,10 @@
       "Bash(cmd.exe /c \"node --version\")",
       "Bash(echo \"exit: $?\")",
       "Bash(powershell.exe -Command ':*)",
-      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files' -Filter 'node*' -ErrorAction SilentlyContinue | Select Name\")"
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Program Files' -Filter 'node*' -ErrorAction SilentlyContinue | Select Name\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }

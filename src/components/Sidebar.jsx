@@ -21,7 +21,7 @@ const PAYOUT_LABELS = [
   { pos: '70th', frac: 0.0026 },
 ]
 
-export default function Sidebar({ competitors, event, pool }) {
+export default function Sidebar({ competitors, event, pool, entries = [] }) {
   const purse     = event?.purse ?? DEFAULT_PURSE
   const madeCount = competitors.filter((c) => !c.isCut && !c.isWD).length
   const round     = event?.round ?? '—'
@@ -49,6 +49,31 @@ export default function Sidebar({ competitors, event, pool }) {
           <Stat val={madeCount || '—'} lbl="Made Cut" />
         </div>
       </Widget>
+
+      {/* Best & Worst score cards */}
+      {entries.length > 0 && (() => {
+        const active = entries.filter((e) => e.totalSqrt > 0)
+        const best   = entries[0]   // already sorted desc by totalSqrt
+        const worst  = entries[entries.length - 1]
+        return (
+          <div className="grid grid-cols-2 gap-3">
+            <PrizeCard
+              label="🏆 Best Score"
+              name={best?.name}
+              value={best?.totalSqrt.toFixed(1)}
+              sublabel="√ score"
+              highlight="var(--gold)"
+            />
+            <PrizeCard
+              label="🥄 Worst Score"
+              name={worst?.name}
+              value={worst?.totalSqrt.toFixed(1)}
+              sublabel="√ score"
+              highlight="var(--cut)"
+            />
+          </div>
+        )
+      })()}
 
       {/* Tournament leaderboard */}
       <Widget title="Tournament Leaders" badge={isLive ? 'Live' : event?.completed ? 'Final' : '—'}>
@@ -131,6 +156,26 @@ function Stat({ val, lbl }) {
       </div>
       <div className="text-[10px] tracking-widest uppercase mt-0.5" style={{ color: '#7A7A7A' }}>
         {lbl}
+      </div>
+    </div>
+  )
+}
+
+function PrizeCard({ label, name, value, sublabel, highlight }) {
+  return (
+    <div
+      className="rounded-sm p-3 flex flex-col gap-1"
+      style={{ background: 'white', border: `1px solid var(--cream-dark)`, borderTop: `3px solid ${highlight}` }}
+    >
+      <div className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: '#7A7A7A' }}>
+        {label}
+      </div>
+      <div className="font-display text-lg font-bold leading-tight" style={{ color: highlight }}>
+        {value ?? '—'}
+      </div>
+      <div className="text-[10px]" style={{ color: '#7A7A7A' }}>{sublabel}</div>
+      <div className="text-xs font-semibold mt-0.5 truncate" style={{ color: '#1A1A1A' }}>
+        {name ?? '—'}
       </div>
     </div>
   )

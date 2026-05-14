@@ -1,7 +1,7 @@
 {
-  "_note": "Golfer names must match ESPN displayName exactly (accents OK — the app normalises them). Update picks each year.",
-  "purse": 21000000,
+  "_note": "Golfer names normalised against ESPN displayName. Update picks before each tournament.",
   "_tournament": "PGA Championship 2026",
+  "purse": 21000000,
   "pools": [
     {
       "id": "friends",
@@ -9,123 +9,99 @@
       "password": "azalea",
       "entries": [
         {
-          "id": "tyler",
-          "name": "Tyler",
+          "id": "jai",
+          "name": "Jai",
           "golfers": [
-            "Rory McIlroy",
-            "Jordan Spieth",
+            "Scottie Scheffler",
+            "Patrick Cantlay",
+            "Russell Henley",
+            "Adam Scott",
             "Jason Day",
-            "Keegan Bradley",
-            "Dustin Johnson",
-            "Sergio Garcia"
-          ]
-        },
-        {
-          "id": "andrew",
-          "name": "Andrew",
-          "golfers": [
-            "Bryson DeChambeau",
-            "Patrick Reed",
-            "Shane Lowry",
-            "Sam Burns",
-            "Harris English",
-            "Ryan Gerard"
-          ]
-        },
-        {
-          "id": "sid",
-          "name": "Sid",
-          "golfers": [
-            "Ludvig Åberg",
-            "Min Woo Lee",
-            "Si Woo Kim",
-            "Max Homa",
-            "Sungjae Im",
-            "Aaron Rai"
+            "TBD"
           ]
         },
         {
           "id": "alex",
           "name": "Alex",
           "golfers": [
-            "Collin Morikawa",
-            "Brooks Koepka",
+            "Rory McIlroy",
             "Tyrrell Hatton",
-            "Wyndham Clark",
+            "Jordan Spieth",
+            "Sam Burns",
             "Kurt Kitayama",
-            "Zach Johnson"
+            "TBD"
           ]
         },
         {
-          "id": "blake",
-          "name": "Blake",
+          "id": "tyler",
+          "name": "Tyler",
           "golfers": [
-            "Scottie Scheffler",
-            "Corey Conners",
-            "Akshay Bhatia",
-            "Daniel Berger",
-            "Gary Woodland",
-            "Carlos Ortiz"
-          ]
-        },
-        {
-          "id": "sumer",
-          "name": "Sumer",
-          "golfers": [
-            "Tommy Fleetwood",
+            "Cameron Young",
             "Justin Rose",
-            "Nicolai Hojgaard",
-            "Maverick McNealy",
-            "Ben Griffin",
-            "Alex Noren"
+            "Rickie Fowler",
+            "Hideki Matsuyama",
+            "Keegan Bradley",
+            "Harry Hall"
+          ]
+        },
+        {
+          "id": "andrew",
+          "name": "Andrew",
+          "golfers": [
+            "Xander Schauffele",
+            "Chris Gotterup",
+            "Robert MacIntyre",
+            "Min Woo Lee",
+            "Patrick Reed",
+            "Aaron Rai"
           ]
         },
         {
           "id": "ragini",
           "name": "Ragini",
           "golfers": [
-            "Matt Fitzpatrick",
-            "Hideki Matsuyama",
-            "Patrick Cantlay",
+            "Ludvig Åberg",
+            "Collin Morikawa",
             "Justin Thomas",
-            "Cameron Smith",
-            "Brian Harman"
+            "Shane Lowry",
+            "Maverick McNealy",
+            "Harris English"
           ]
         },
         {
-          "id": "jai",
-          "name": "Jai",
+          "id": "sid",
+          "name": "Sid",
           "golfers": [
             "Jon Rahm",
-            "Viktor Hovland",
-            "Chris Gotterup",
-            "Jake Knapp",
-            "Jacob Bridgeman",
-            "Nick Taylor"
+            "Brooks Koepka",
+            "Nicolai Hojgaard",
+            "Akshay Bhatia",
+            "Joaquin Niemann",
+            "Gary Woodland"
           ]
         },
         {
           "id": "william",
           "name": "William",
           "golfers": [
-            "Cameron Young",
+            "Tommy Fleetwood",
             "J.J. Spaun",
+            "Viktor Hovland",
             "Sepp Straka",
-            "Ryan Fox",
-            "Marco Penge",
-            "Matt McCarty"
+            "Matt McCarty",
+            "Marco Penge"
           ]
         },
         {
-          "id": "josh",
-          "name": "Josh",
+          "id": "blake",
+          "name": "Blake",
           "golfers": [
-            "Xander Schauffele",
-            "Robert MacIntyre",
-            "Russell Henley",
-            "Adam Scott",
-            "Rasmus Hojgaard",
-            "Harry Hall"
+            "Matt Fitzpatrick",
+            "Bryson DeChambeau",
+            "Si Woo Kim",
+            "Corey Conners",
+            "Sungjae Im",
+            "Sudarshan Yellamaraju"
           ]
         }
       ]
@@ -134,80 +110,7 @@
       "id": "stern",
       "name": "Stern Pool",
       "password": "stern",
-      "entries": [
-        {
-          "id": "stack",
-          "name": "Stack",
-          "golfers": [
-            "Scottie Scheffler",
-            "Min Woo Lee",
-            "Justin Rose",
-            "Justin Thomas",
-            "Patrick Cantlay",
-            "Rasmus Hojgaard"
-          ]
-        },
-        {
-          "id": "brandon",
-          "name": "Brandon",
-          "golfers": [
-            "Jon Rahm",
-            "Hideki Matsuyama",
-            "Patrick Reed",
-            "Russell Henley",
-            "Sam Burns",
-            "Nicolai Hojgaard"
-          ]
-        },
-        {
-          "id": "jai-stern",
-          "name": "Jai",
-          "golfers": [
-            "Rory McIlroy",
-            "Collin Morikawa",
-            "Brooks Koepka",
-            "Robert MacIntyre",
-            "Adam Scott",
-            "Tyrrell Hatton"
-          ]
-        },
-        {
-          "id": "josh-stern",
-          "name": "Josh",
-          "golfers": [
-            "Ludvig Åberg",
-            "Matt Fitzpatrick",
-            "Viktor Hovland",
-            "Jordan Spieth",
-            "Dustin Johnson",
-            "Maverick McNealy"
-          ]
-        },
-        {
-          "id": "erik",
-          "name": "Erik",
-          "golfers": [
-            "Bryson DeChambeau",
-            "Tommy Fleetwood",
-            "Chris Gotterup",
-            "Akshay Bhatia",
-            "Shane Lowry",
-            "Jason Day"
-          ]
-        },
-        {
-          "id": "stehl",
-          "name": "Stehl",
-          "golfers": [
-            "Xander Schauffele",
-            "Cameron Young",
-            "J.J. Spaun",
-            "Jake Knapp",
-            "Ben Griffin",
-            "Keegan Bradley"
-          ]
-        }
-      ]
+      "entries": []
     }
   ]
 }

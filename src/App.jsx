@@ -76,7 +76,7 @@ export default function App() {
       <div className="max-w-[1200px] mx-auto px-8 py-8 grid gap-8 items-start"
            style={{ gridTemplateColumns: '1fr 340px' }}>
         <Leaderboard entries={scoredEntries} pool={activePool} event={event} />
-        <Sidebar competitors={competitors} event={event} pool={activePool} />
+        <Sidebar competitors={competitors} event={event} pool={activePool} entries={scoredEntries} />
       </div>
     </div>
   )
