@@ -5,8 +5,8 @@ let cache = null
 let cacheTime = 0
 const CACHE_TTL = 60_000
 
-// 2026 PGA Championship — update ID from espn.com/golf/leaderboard URL
-const TOURNAMENT_ID = '401811941' // TODO: replace with 2026 PGA Championship ID
+// 2026 PGA Championship
+const TOURNAMENT_ID = '401811947'
 const ESPN_URL = `https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event=${TOURNAMENT_ID}`
 
 const FETCH_HEADERS = {
