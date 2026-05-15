@@ -22,8 +22,8 @@ export default function TeamCard({ entry, rank, rankLabel, defaultExpanded = fal
     >
       {/* ── Header row ── */}
       <div
-        className="grid items-center gap-4 px-4 py-3 cursor-pointer select-none"
-        style={{ gridTemplateColumns: '2rem 1fr auto auto auto auto 1rem' }}
+        className="grid items-center gap-2 md:gap-4 px-3 md:px-4 py-3 cursor-pointer select-none"
+        style={{ gridTemplateColumns: 'var(--card-cols)' }}
         onClick={() => setOpen(!open)}
       >
         {/* Rank */}
@@ -41,11 +41,15 @@ export default function TeamCard({ entry, rank, rankLabel, defaultExpanded = fal
           </div>
         </div>
 
-        {/* Total score */}
-        <ColStat label="Total" value={formatScore(scoreNum)} colorClass={scoreClass} />
+        {/* Total score — hidden on mobile */}
+        <div className="hidden md:block">
+          <ColStat label="Total" value={formatScore(scoreNum)} colorClass={scoreClass} />
+        </div>
 
-        {/* Proj. Earnings */}
-        <ColStat label="Earnings" value={fmtMoney(entry.totalEarnings)} />
+        {/* Proj. Earnings — hidden on mobile */}
+        <div className="hidden md:block">
+          <ColStat label="Earnings" value={fmtMoney(entry.totalEarnings)} />
+        </div>
 
         {/* √ Score */}
         <ColStat
@@ -85,12 +89,12 @@ export default function TeamCard({ entry, rank, rankLabel, defaultExpanded = fal
             <span className="text-center">Pos</span>
             <span>Golfer</span>
             <span className="text-center">Score</span>
-            <span className="text-center">Today</span>
+            <span className="text-center hidden md:block">Today</span>
             <span className="text-center">Thru</span>
-            <span className="text-center">R1</span>
-            <span className="text-center">R2</span>
-            <span className="text-center">R3</span>
-            <span className="text-center">R4</span>
+            <span className="text-center hidden md:block">R1</span>
+            <span className="text-center hidden md:block">R2</span>
+            <span className="text-center hidden md:block">R3</span>
+            <span className="text-center hidden md:block">R4</span>
             <span className="text-right">Earnings</span>
             <span className="text-right">√ Score</span>
           </div>
@@ -162,7 +166,7 @@ function GolferRow({ g }) {
       </span>
 
       {/* Today's round score */}
-      <span className="text-center font-semibold">
+      <span className="text-center font-semibold hidden md:block">
         {todayNum != null
           ? <span style={{ color: todayNum < 0 ? 'var(--green)' : todayNum > 0 ? 'var(--cut)' : '#4A4A4A' }}>
               {formatScore(todayNum)}
@@ -178,7 +182,7 @@ function GolferRow({ g }) {
 
       {/* R1–R4 */}
       {[0, 1, 2, 3].map((i) => (
-        <span key={i} className="text-center" style={{ color: '#4A4A4A' }}>
+        <span key={i} className="text-center hidden md:block" style={{ color: '#4A4A4A' }}>
           {rounds[i] != null ? rounds[i] : '—'}
         </span>
       ))}

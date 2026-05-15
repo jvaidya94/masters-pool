@@ -77,9 +77,8 @@ export default function App() {
         </div>
       )}
 
-      {/* Main grid */}
-      <div className="max-w-[1200px] mx-auto px-8 py-8 grid gap-8 items-start"
-           style={{ gridTemplateColumns: '1fr 340px' }}>
+      {/* Main grid — stacks on mobile, side-by-side on desktop */}
+      <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 md:py-8 grid gap-6 md:gap-8 items-start md:grid-cols-[1fr_340px]">
         <Leaderboard entries={scoredEntries} pool={activePool} event={event} />
         <Sidebar competitors={competitors} event={event} pool={activePool} entries={scoredEntries} />
       </div>

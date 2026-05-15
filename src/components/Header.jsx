@@ -17,11 +17,11 @@ export default function Header({ pool, event, lastUpdated }) {
 
   return (
     <header style={{ background: 'var(--green)', borderBottom: '3px solid var(--gold)' }}>
-      <div className="max-w-[1200px] mx-auto px-8 py-4 flex items-center justify-between">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-3 md:py-4 flex items-center justify-between gap-3">
 
         {/* Left: logo + pool name */}
         <div className="flex items-center gap-4">
-          <PGALogo width={40} height={50} />
+          <PGALogo width={40} height={50} color="white" />
           <div style={{ borderLeft: '1px solid rgba(201,162,74,0.35)', paddingLeft: '1rem' }}>
             <h1 className="font-display text-xl font-semibold tracking-wide" style={{ color: 'var(--gold)' }}>
               {pool.name}
@@ -33,7 +33,7 @@ export default function Header({ pool, event, lastUpdated }) {
         </div>
 
         {/* Right: status badge + last updated */}
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <div
             className="inline-flex items-center gap-2 px-3 py-1 rounded-sm text-[11px] font-semibold tracking-widest uppercase"
             style={{ background: 'rgba(201,162,74,0.15)', border: '1px solid var(--gold)', color: 'var(--gold-light)' }}

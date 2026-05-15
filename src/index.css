@@ -13,8 +13,10 @@
     --gold-light: #E2C47A;
     --cut:        #8B0000;
 
-    /* Golfer row: Pos | Golfer | Score | Today | Thru | R1 | R2 | R3 | R4 | Earnings | √Score */
-    --golfer-cols: 1.4rem 1fr 2.8rem 2.8rem 2.8rem 2.4rem 2.4rem 2.4rem 2.4rem 5.5rem 4.5rem;
+    /* Mobile golfer row: Pos | Golfer | Score | Thru | Earnings | √Score */
+    --golfer-cols: 1.4rem 1fr 2.8rem 2.8rem 4.8rem 4rem;
+    /* Mobile card header: Rank | Name | √Score | Chevron */
+    --card-cols: 2rem 1fr auto 1rem;
   }
 
   body {
@@ -22,6 +24,16 @@
     background-color: var(--cream);
     color: #1A1A1A;
     -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Desktop column overrides */
+@media (min-width: 768px) {
+  :root {
+    /* Pos | Golfer | Score | Today | Thru | R1 | R2 | R3 | R4 | Earnings | √Score */
+    --golfer-cols: 1.4rem 1fr 2.8rem 2.8rem 2.8rem 2.4rem 2.4rem 2.4rem 2.4rem 5.5rem 4.5rem;
+    /* Rank | Name | Total | Earnings | √Score | Chevron */
+    --card-cols: 2rem 1fr auto auto auto auto 1rem;
   }
 }
 

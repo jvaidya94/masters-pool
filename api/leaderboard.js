@@ -116,23 +116,39 @@ function parseCompetitor(c, currentRound = 1) {
         : parseInt((earnStat.displayValue ?? '').replace(/[^0-9]/g, ''), 10) || 0
   }
 
-  // Total score to par — stat "scoreToPar" in ESPN's Masters feed.
-  const rawScore = statsMap.scoreToPar?.displayValue ?? c.score?.displayValue ?? '-'
+  // ESPN's scoreToPar stat changes meaning depending on round:
+  //   Round 1:   cumulative total to par (e.g. "-3" after 18 holes)
+  //   Round 2-4: TODAY's round-to-par only (e.g. "+3" for the current round)
+  // We always want to display the cumulative total, so we must re-derive it in R2+.
+  const rawScore   = statsMap.scoreToPar?.displayValue ?? c.score?.displayValue ?? '-'
   const scoreClean = (rawScore === '-' || rawScore === '--') ? 'E' : rawScore
-  const parsedTotal = parseInt(scoreClean, 10)
-  const scoreRaw = !isNaN(parsedTotal) && Math.abs(parsedTotal) > 99 ? 'E' : scoreClean
-  const totalToPar = isNaN(parsedTotal) ? 0 : parsedTotal
+  const parsedRaw  = parseInt(scoreClean, 10)
+  // Clamp year-as-score placeholder (e.g. "2026") to 0
+  const espnValue  = (isNaN(parsedRaw) || Math.abs(parsedRaw) > 99) ? 0 : parsedRaw
 
-  // Today's round score to par — derived by subtracting completed rounds.
-  // completedRounds = rounds before today that are fully in the books.
-  // Each completed round: to-par = strokes - AUGUSTA_PAR.
+  let scoreRaw         = (isNaN(parsedRaw) || Math.abs(parsedRaw) > 99) ? 'E' : scoreClean
+  let cumulativeToPar  = espnValue   // will be corrected below for R2-4
+
   let todayRaw = null
-  if (thru > 0) {
+
+  if (thru > 0 && !isCut && !isWD) {
     const completedRoundCount = currentRound - 1
-    const completedStrokes = rounds.slice(0, completedRoundCount).reduce((s, r) => s + r, 0)
-    const completedToPar   = completedStrokes - (completedRoundCount * COURSE_PAR)
-    const todayToPar       = totalToPar - completedToPar
-    todayRaw = todayToPar === 0 ? 'E' : todayToPar > 0 ? `+${todayToPar}` : `${todayToPar}`
+    const completedStrokes    = rounds.slice(0, completedRoundCount).reduce((s, r) => s + r, 0)
+    const completedToPar      = completedStrokes - (completedRoundCount * COURSE_PAR)
+
+    if (completedRoundCount > 0 && completedStrokes > 0) {
+      // R2-4: espnValue == today's round-to-par; build the real cumulative
+      const todayToPar = espnValue
+      cumulativeToPar  = completedToPar + todayToPar
+      todayRaw  = todayToPar === 0 ? 'E' : todayToPar > 0 ? `+${todayToPar}` : `${todayToPar}`
+      scoreRaw  = cumulativeToPar === 0 ? 'E'
+                : cumulativeToPar > 0   ? `+${cumulativeToPar}`
+                :                          `${cumulativeToPar}`
+    } else {
+      // R1 (or missing prior-round data): espnValue IS the cumulative total
+      const todayToPar = espnValue - completedToPar
+      todayRaw = todayToPar === 0 ? 'E' : todayToPar > 0 ? `+${todayToPar}` : `${todayToPar}`
+    }
   }
 
   // Tee time — for unstarted players status.displayValue is an ISO datetime string

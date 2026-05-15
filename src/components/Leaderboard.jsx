@@ -17,10 +17,15 @@ export default function Leaderboard({ entries, pool, event }) {
 
       <div className="flex flex-col gap-3">
         {entries.map((entry, i) => {
-          // Compute tied rank: find how many entries share the same √ score
+          // Compute tied rank: find how many entries share the same √ score.
+          // Only flag as a tie when scores are non-zero — pre-tournament all entries
+          // have totalSqrt === 0, which would otherwise label everyone "T1".
           const sameScore = entries.filter((e) => e.totalSqrt === entry.totalSqrt)
-          const rankNum   = entries.findIndex((e) => e.totalSqrt === entry.totalSqrt) + 1
-          const rankLabel = sameScore.length > 1 ? `T${rankNum}` : `${rankNum}`
+          const isTied    = sameScore.length > 1 && entry.totalSqrt > 0
+          const rankNum   = isTied
+            ? entries.findIndex((e) => e.totalSqrt === entry.totalSqrt) + 1
+            : i + 1
+          const rankLabel = isTied ? `T${rankNum}` : `${rankNum}`
           return (
             <TeamCard
               key={entry.id}
