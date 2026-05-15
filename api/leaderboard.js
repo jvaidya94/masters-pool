@@ -86,8 +86,6 @@ export default async function handler(req, res) {
   }
 }
 
-const COURSE_PAR = 72  // Aronimink Golf Club par
-
 function parseCompetitor(c, currentRound = 1) {
   const statsMap = Object.fromEntries(
     (c.statistics ?? []).map((s) => [s.name, s])
@@ -98,15 +96,26 @@ function parseCompetitor(c, currentRound = 1) {
   const isWD  = statusName.includes('WD') || statusName.includes('WITHDRAWN')
   const thru  = c.status?.thru ?? 0
 
-  // Round scores — ESPN linescores store stroke totals per round.
-  // Filter out placeholder entries (displayValue "-" or value 0 with no display).
+  // Round strokes per period. ESPN includes `period` on each linescore so we
+  // can index by round number directly (rounds[0]=R1 strokes, rounds[1]=R2…)
+  // and also extract today's to-par from the current round's displayValue.
   const allLinescores = (c.linescores ?? [])
-  const rounds = allLinescores
-    .filter((r) => r.value != null && r.value > 0 &&
-                   r.displayValue && r.displayValue !== '-' && r.displayValue !== '--')
-    .map((r) => Number(r.value))
+  const rounds = []
+  let todayRaw = null
+  for (const l of allLinescores) {
+    if (!l.period) continue
+    if (typeof l.value === 'number' && l.value > 0) {
+      rounds[l.period - 1] = Number(l.value)
+    }
+    // Capture today's round-to-par directly (e.g. "+3", "-2", "E")
+    if (l.period === currentRound && l.displayValue && l.displayValue !== '-') {
+      todayRaw = l.displayValue
+    }
+  }
+  // Only show "today" for active players in a live round
+  if (!(thru > 0 && !isCut && !isWD)) todayRaw = null
 
-  // Earnings — stat is named "officialAmount" in ESPN's Masters feed.
+  // Earnings — stat is named "officialAmount" in ESPN's feed.
   let earnings = 0
   const earnStat = statsMap.officialAmount ?? statsMap.earnings ?? statsMap.moneyWon
   if (earnStat) {
@@ -116,40 +125,12 @@ function parseCompetitor(c, currentRound = 1) {
         : parseInt((earnStat.displayValue ?? '').replace(/[^0-9]/g, ''), 10) || 0
   }
 
-  // ESPN's scoreToPar stat changes meaning depending on round:
-  //   Round 1:   cumulative total to par (e.g. "-3" after 18 holes)
-  //   Round 2-4: TODAY's round-to-par only (e.g. "+3" for the current round)
-  // We always want to display the cumulative total, so we must re-derive it in R2+.
-  const rawScore   = statsMap.scoreToPar?.displayValue ?? c.score?.displayValue ?? '-'
+  // Cumulative total to par — `scoreToPar` is always the cumulative score.
+  const rawScore   = statsMap.scoreToPar?.displayValue ?? '-'
   const scoreClean = (rawScore === '-' || rawScore === '--') ? 'E' : rawScore
-  const parsedRaw  = parseInt(scoreClean, 10)
-  // Clamp year-as-score placeholder (e.g. "2026") to 0
-  const espnValue  = (isNaN(parsedRaw) || Math.abs(parsedRaw) > 99) ? 0 : parsedRaw
-
-  let scoreRaw         = (isNaN(parsedRaw) || Math.abs(parsedRaw) > 99) ? 'E' : scoreClean
-  let cumulativeToPar  = espnValue   // will be corrected below for R2-4
-
-  let todayRaw = null
-
-  if (thru > 0 && !isCut && !isWD) {
-    const completedRoundCount = currentRound - 1
-    const completedStrokes    = rounds.slice(0, completedRoundCount).reduce((s, r) => s + r, 0)
-    const completedToPar      = completedStrokes - (completedRoundCount * COURSE_PAR)
-
-    if (completedRoundCount > 0 && completedStrokes > 0) {
-      // R2-4: espnValue == today's round-to-par; build the real cumulative
-      const todayToPar = espnValue
-      cumulativeToPar  = completedToPar + todayToPar
-      todayRaw  = todayToPar === 0 ? 'E' : todayToPar > 0 ? `+${todayToPar}` : `${todayToPar}`
-      scoreRaw  = cumulativeToPar === 0 ? 'E'
-                : cumulativeToPar > 0   ? `+${cumulativeToPar}`
-                :                          `${cumulativeToPar}`
-    } else {
-      // R1 (or missing prior-round data): espnValue IS the cumulative total
-      const todayToPar = espnValue - completedToPar
-      todayRaw = todayToPar === 0 ? 'E' : todayToPar > 0 ? `+${todayToPar}` : `${todayToPar}`
-    }
-  }
+  const parsedTotal = parseInt(scoreClean, 10)
+  // Clamp year-as-score placeholder (e.g. "2026") to "E"
+  const scoreRaw = (!isNaN(parsedTotal) && Math.abs(parsedTotal) > 99) ? 'E' : scoreClean
 
   // Tee time — for unstarted players status.displayValue is an ISO datetime string
   let teeTime = null
