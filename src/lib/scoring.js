@@ -79,8 +79,11 @@ export function computeEntryScores(entries, competitors, purse = DEFAULT_PURSE) 
 
     const totalSqrt     = golfers.reduce((s, g) => s + g.sqrt, 0)
     const totalEarnings = golfers.reduce((s, g) => s + g.earnings, 0)
+    // Include cut/WD players in the stroke total — their score-to-par at the
+    // time they exited still counts against the entry (drives the Worst Score
+    // card and the per-entry total displayed on each card).
     const totalScore    = golfers.reduce((s, g) => {
-      if (!g.comp || g.comp.isCut || g.comp.isWD) return s
+      if (!g.comp) return s
       return s + parseScore(g.comp.score)
     }, 0)
 
