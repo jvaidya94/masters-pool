@@ -133,8 +133,10 @@ function GolferRow({ g }) {
       })
     } catch { return null }
   })()
-  const scoreDisplay = isCut || isWD || notFound
-    ? (isCut ? 'CUT' : isWD ? 'WD' : 'N/F')
+  // Always show the numeric score-to-par when we have a comp (even for cut/WD).
+  // CUT / WD status is already conveyed by the POS column.
+  const scoreDisplay = notFound
+    ? 'N/F'
     : (comp ? formatScore(scoreNum) : '—')
 
   return (
@@ -201,9 +203,10 @@ function GolferRow({ g }) {
 }
 
 function ScoreDisplay({ val, isCut, isWD, notFound, scoreNum }) {
-  if (isCut || isWD || notFound) {
+  if (notFound) {
     return <span style={{ color: 'var(--cut)' }}>{val}</span>
   }
+  // Cut/WD players still show their numeric score; color it by under/over par.
   const color = scoreNum < 0 ? 'var(--green)' : scoreNum > 0 ? 'var(--cut)' : '#4A4A4A'
   return <span style={{ color }}>{val}</span>
 }
